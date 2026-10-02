@@ -1,14 +1,16 @@
 /* =========================================================
-   MusicFinder - app.js (نسخه نهایی ترکیبی)
-   Radio Javan (آهنگ‌های ایرانی کامل) + iTunes (پیش‌نمایش خارجی)
+   MusicFinder - app.js (نسخه نهایی)
+   Radio Javan (ایرانی) + iTunes (خارجی)
+   با رفع مشکل کاور آلبوم‌ها
 ========================================================= */
 
 const TASTE_KEY   = "musicFinderTasteV8";
 const HISTORY_KEY = "musicFinderSearchHistoryV8";
 
-/* ⚠️ اطلاعات خودت را اینجا گذاشتم */
+/* ⚠️ اطلاعات خودت */
 const PROXY_URL = "https://winter-cloud-3190musicfinder-proxy.ebrahiminasabtaha.workers.dev";
 const API_TOKEN = "cif6wf8evc6mxah:b525h5OhbFlOXYjD6Z5N";
+
 
 /* =========================
    STORAGE
@@ -38,6 +40,7 @@ function saveHistory(h) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
 }
 
+
 /* =========================
    UTILS
 ========================= */
@@ -58,6 +61,21 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+/* ✅ تابع جدید: پروکسی عکس برای Radio Javan */
+function proxifyImage(url, source) {
+  if (!url) return "";
+
+  // برای Radio Javan از weserv استفاده کن
+  if (source === "radiojavan") {
+    const clean = url.replace(/^https?:\/\//, "");
+    return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}`;
+  }
+
+  // بقیه منابع مستقیم لود شوند
+  return url;
+}
+
+
 /* =========================
    MENU
 ========================= */
@@ -77,6 +95,7 @@ function goTo(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }, 150);
 }
+
 
 /* =========================
    HISTORY
@@ -116,6 +135,7 @@ function clearHistory() {
   renderHistory();
 }
 
+
 /* =========================
    TASTE
 ========================= */
@@ -131,6 +151,7 @@ function rememberTrack(t) {
       name: t.name || "",
       artist: t.artist || "",
       image: t.image || "",
+      source: t.source || "",
       audio: t.audio || "",
       clicks: 0
     };
@@ -150,6 +171,7 @@ function clearTaste() {
   renderTaste();
   renderForYou();
 }
+
 
 /* =========================
    SEARCH (Radio Javan + iTunes)
@@ -233,6 +255,7 @@ async function performSearch() {
   renderResults(allTracks, query, rjTracks.length, itunesTracks.length);
 }
 
+
 function renderResults(tracks, query, rjCount = 0, itCount = 0) {
   const c = document.getElementById("searchResults");
   const s = document.getElementById("searchStatus");
@@ -259,8 +282,10 @@ function renderResults(tracks, query, rjCount = 0, itCount = 0) {
   `;
 }
 
+
 function trackCard(t) {
-  const img = t.image || "";
+  const rawImg = t.image || "";
+  const img = proxifyImage(rawImg, t.source);
   const dur = t.duration ? formatTime(t.duration) : "";
   const isFull = t.full;
   const badge = isFull
@@ -269,7 +294,9 @@ function trackCard(t) {
 
   return `
     <div class="resultCard glass" onclick="setBackground('${img}')">
-      ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : `<div class="cover"></div>`}
+      ${img
+        ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">`
+        : `<div class="cover"></div>`}
 
       <div style="margin-top:10px;">${badge}</div>
       <div class="cardTitle">${escapeHtml(t.name)}</div>
@@ -287,6 +314,7 @@ function trackCard(t) {
   `;
 }
 
+
 /* =========================
    BACKGROUND
 ========================= */
@@ -297,6 +325,7 @@ function setBackground(image) {
   bg.style.backgroundImage = `url("${image}")`;
   bg.style.opacity = ".30";
 }
+
 
 /* =========================
    FOR YOU
@@ -317,18 +346,22 @@ function renderForYou() {
     <div style="margin-top:10px;">
       <h3 style="margin-bottom:16px;">🎵 آهنگ‌هایی که بیشتر کاوش کرده‌اید</h3>
       <div class="resultGrid">
-        ${tracks.slice(0, 6).map(t => `
-          <div class="resultCard glass">
-            ${t.image ? `<img class="cover" src="${t.image}" alt="" referrerpolicy="no-referrer" loading="lazy">` : ""}
-            <div class="cardTitle">${escapeHtml(t.name)}</div>
-            <div class="cardArtist">${escapeHtml(t.artist)}</div>
-            <div class="cardMeta">${t.clicks} بار کاوش شده</div>
-          </div>
-        `).join("")}
+        ${tracks.slice(0, 6).map(t => {
+          const img = proxifyImage(t.image, t.source);
+          return `
+            <div class="resultCard glass">
+              ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : ""}
+              <div class="cardTitle">${escapeHtml(t.name)}</div>
+              <div class="cardArtist">${escapeHtml(t.artist)}</div>
+              <div class="cardMeta">${t.clicks} بار کاوش شده</div>
+            </div>
+          `;
+        }).join("")}
       </div>
     </div>
   `;
 }
+
 
 /* =========================
    TASTE RENDER
@@ -358,6 +391,7 @@ function renderTaste() {
   }
 }
 
+
 /* =========================
    MUSIC PLAYER
 ========================= */
@@ -377,6 +411,7 @@ const playerVolume = document.getElementById("playerVolume");
 let currentPlayerIndex = -1;
 let playerQueue = [];
 
+
 async function loadPlayerSong(song, autoPlay = false) {
   if (!song) return;
 
@@ -388,7 +423,10 @@ async function loadPlayerSong(song, autoPlay = false) {
 
   playerTitle.textContent = song.name || "آهنگ ناشناس";
   playerArtist.textContent = song.artist || "هنرمند ناشناس";
-  playerCover.src = song.image || "";
+
+  // کاور پلیر هم از پروکسی رد شود
+  const coverImg = proxifyImage(song.image, song.source);
+  playerCover.src = coverImg || "";
 
   musicAudio.src = url;
   musicPlayer.classList.add("active");
@@ -405,9 +443,10 @@ async function loadPlayerSong(song, autoPlay = false) {
     playerPlay.textContent = "▶";
   }
 
-  if (song.image) setBackground(song.image);
+  if (coverImg) setBackground(coverImg);
   registerTrackClick(song);
 }
+
 
 if (playerPlay) {
   playerPlay.addEventListener("click", () => {
@@ -477,6 +516,7 @@ if (playerNext) {
   });
 }
 
+
 window.playMusicFinderSong = function (song, queue = []) {
   if (!song) return;
   playerQueue = queue.length ? queue : [song];
@@ -484,6 +524,7 @@ window.playMusicFinderSong = function (song, queue = []) {
   if (currentPlayerIndex < 0) currentPlayerIndex = 0;
   loadPlayerSong(song, true);
 };
+
 
 /* =========================
    INIT
