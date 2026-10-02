@@ -1,6 +1,6 @@
 /* =========================================================
-   MusicFinder - app.js v14 (کامل - بدون تأیید ایمیل)
-   Auth + Profile + Favorites + Download
+   MusicFinder - app.js v15
+   Auth (بدون تأیید ایمیل) + Profile + Favorites + Download
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
@@ -1299,4 +1299,4 @@ renderFavoriteArtists();
 updateFavBadges();
 checkAuth();
 
-console.log("MusicFinder v14 ready · بدون تأیید ایمیل");
+console.log("MusicFinder v15 ready · بدون تأیید ایمیل");
