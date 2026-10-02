@@ -1,6 +1,6 @@
 /* =========================================================
-   MusicFinder - app.js v15
-   Auth (بدون تأیید ایمیل) + Profile + Favorites + Download
+   MusicFinder - app.js v16 (اصلاح‌شده)
+   فقط آهنگ‌های MP3 کامل + Auth + Profile + Favorites + Download
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
@@ -242,9 +242,9 @@ function clearTaste() {
   renderForYou();
 }
 
-/* =========================
-   SEARCH
-========================= */
+/* =========================================================
+   SEARCH (فقط mp3s از رادیو جوان + iTunes)
+========================================================= */
 async function performSearch() {
   const input = document.getElementById("searchInput");
   const query = input.value.trim();
@@ -265,44 +265,52 @@ async function performSearch() {
 
   rememberSearch(query);
 
+  // === Radio Javan: فقط mp3s ===
   let rjTracks = [];
   try {
     const url = `${PROXY_URL}/music/radiojavan?action=search&s=${encodeURIComponent(query)}&token=${API_TOKEN}`;
     const res = await fetch(url);
     const data = await res.json();
 
-    if (data && data.result && data.result.mp3s) {
-      rjTracks = data.result.mp3s.map(item => ({
-        id: "rj_" + String(item.id),
-        name: item.song || item.title || "بدون نام",
-        artist: item.artist || "هنرمند ناشناس",
-        album: item.album_album || "",
-        image: item.photo || item.thumbnail || "",
-        audio: item.link || "",
-        duration: item.duration || 0,
-        source: "radiojavan",
-        full: true
-      })).filter(t => t.audio);
+    if (data && data.result && Array.isArray(data.result.mp3s)) {
+      rjTracks = data.result.mp3s
+        .filter(item => item && item.link && item.song)
+        .map(item => ({
+          id: "rj_" + String(item.id),
+          name: item.song || "بدون نام",
+          artist: item.artist || "هنرمند ناشناس",
+          album: item.album_album || item.album || "",
+          image: item.photo || item.thumbnail || "",
+          audio: item.link,
+          duration: item.duration || 0,
+          source: "radiojavan",
+          full: true
+        }));
     }
-  } catch (e) { console.warn("RJ failed:", e); }
+  } catch (e) {
+    console.warn("RJ failed:", e);
+  }
 
+  // === iTunes ===
   let itunesTracks = [];
   try {
     const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=20`;
     const res = await fetch(itunesUrl);
     const data = await res.json();
 
-    itunesTracks = (data.results || []).map(item => ({
-      id: "it_" + String(item.trackId),
-      name: item.trackName || "",
-      artist: item.artistName || "",
-      album: item.collectionName || "",
-      image: item.artworkUrl100?.replace("100x100", "400x400") || "",
-      audio: item.previewUrl || "",
-      duration: item.trackTimeMillis ? Math.floor(item.trackTimeMillis / 1000) : 0,
-      source: "itunes",
-      full: false
-    })).filter(t => t.audio);
+    itunesTracks = (data.results || [])
+      .filter(item => item.previewUrl)
+      .map(item => ({
+        id: "it_" + String(item.trackId),
+        name: item.trackName || "",
+        artist: item.artistName || "",
+        album: item.collectionName || "",
+        image: item.artworkUrl100?.replace("100x100", "400x400") || "",
+        audio: item.previewUrl,
+        duration: item.trackTimeMillis ? Math.floor(item.trackTimeMillis / 1000) : 0,
+        source: "itunes",
+        full: false
+      }));
   } catch (e) { console.warn("iTunes failed:", e); }
 
   const allTracks = [...rjTracks, ...itunesTracks];
@@ -1299,4 +1307,4 @@ renderFavoriteArtists();
 updateFavBadges();
 checkAuth();
 
-console.log("MusicFinder v15 ready · بدون تأیید ایمیل");
+console.log("MusicFinder v16 ready");
