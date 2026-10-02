@@ -12,19 +12,13 @@
 </head>
 <body>
 
-  <!-- =========================
-       BACKGROUND LAYERS
-  ========================== -->
   <div id="backgroundArt"></div>
   <div class="backgroundOverlay"></div>
   <div class="bg-noise"></div>
-
-  <!-- Floating Orbs -->
   <div class="bg-orb bg-orb-1"></div>
   <div class="bg-orb bg-orb-2"></div>
   <div class="bg-orb bg-orb-3"></div>
 
-  <!-- Floating Music Notes -->
   <div class="music-notes" aria-hidden="true">
     <span style="--i:0">♪</span>
     <span style="--i:1">♫</span>
@@ -36,10 +30,7 @@
     <span style="--i:7">♪</span>
   </div>
 
-
-  <!-- =========================
-       NAVBAR
-  ========================== -->
+  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">
       <span class="logo-icon">🎵</span>
@@ -47,68 +38,98 @@
     </div>
 
     <div class="navRight">
+      <button class="favQuickBtn" onclick="goTo('favorites')" title="مورد علاقه‌ها">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/>
+        </svg>
+        <span class="favCount" id="favCountBadge">0</span>
+      </button>
+
       <button class="menuButton" onclick="openMenu()" aria-label="منو">
         <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-
-  <!-- =========================
-       MENU DRAWER
-  ========================== -->
+  <!-- MENU OVERLAY -->
   <div class="menuOverlay" id="menuOverlay" onclick="closeMenu()"></div>
 
+  <!-- MENU DRAWER (بازطراحی شده) -->
   <aside class="menuDrawer" id="menuDrawer">
-    <div class="menuTop">
-      <div class="menuTitle">
-        <span class="logo-icon">🎵</span>
-        Music<span class="accent">Finder</span>
+    <div class="menuHeader">
+      <div class="menuBrand">
+        <div class="menuBrandIcon">🎵</div>
+        <div class="menuBrandText">
+          <div class="menuBrandTitle">Music<span>Finder</span></div>
+          <div class="menuBrandSub">کشف موسیقی بی‌پایان</div>
+        </div>
       </div>
-      <button class="closeMenu" onclick="closeMenu()" aria-label="بستن">×</button>
+      <button class="closeMenu" onclick="closeMenu()" aria-label="بستن">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
-    <div class="menuDivider"></div>
+    <div class="menuSection">
+      <div class="menuSectionLabel">کاوش</div>
+      <button class="menuItem" onclick="goTo('home')">
+        <span class="menuIconWrap"><span class="menuIcon">🏠</span></span>
+        <span class="menuLabel">خانه</span>
+        <span class="menuArrow">←</span>
+      </button>
+      <button class="menuItem" onclick="goTo('searchSection')">
+        <span class="menuIconWrap"><span class="menuIcon">🔎</span></span>
+        <span class="menuLabel">جستجو</span>
+        <span class="menuArrow">←</span>
+      </button>
+      <button class="menuItem" onclick="goTo('forYou')">
+        <span class="menuIconWrap"><span class="menuIcon">✨</span></span>
+        <span class="menuLabel">پیشنهادی برای تو</span>
+        <span class="menuArrow">←</span>
+      </button>
+    </div>
 
-    <button class="menuItem" onclick="goTo('home')">
-      <span class="menuIcon">🏠</span>
-      <span>خانه</span>
-    </button>
+    <div class="menuSection">
+      <div class="menuSectionLabel">کتابخانه‌ی تو</div>
+      <button class="menuItem highlight" onclick="goTo('favorites')">
+        <span class="menuIconWrap pink"><span class="menuIcon">❤️</span></span>
+        <span class="menuLabel">آهنگ‌های مورد علاقه</span>
+        <span class="menuBadge" id="menuFavCount">0</span>
+      </button>
+      <button class="menuItem highlight" onclick="goTo('favArtists')">
+        <span class="menuIconWrap gold"><span class="menuIcon">⭐</span></span>
+        <span class="menuLabel">هنرمندان مورد علاقه</span>
+        <span class="menuBadge" id="menuFavArtistCount">0</span>
+      </button>
+      <button class="menuItem" onclick="goTo('taste')">
+        <span class="menuIconWrap"><span class="menuIcon">💜</span></span>
+        <span class="menuLabel">سلیقه‌ی تو</span>
+        <span class="menuArrow">←</span>
+      </button>
+      <button class="menuItem" onclick="goTo('history')">
+        <span class="menuIconWrap"><span class="menuIcon">🕘</span></span>
+        <span class="menuLabel">تاریخچه</span>
+        <span class="menuArrow">←</span>
+      </button>
+    </div>
 
-    <button class="menuItem" onclick="goTo('searchSection')">
-      <span class="menuIcon">🔎</span>
-      <span>جستجو</span>
-    </button>
-
-    <button class="menuItem" onclick="goTo('forYou')">
-      <span class="menuIcon">✨</span>
-      <span>پیشنهادی برای تو</span>
-    </button>
-
-    <button class="menuItem" onclick="goTo('taste')">
-      <span class="menuIcon">❤️</span>
-      <span>سلیقه‌ی تو</span>
-    </button>
-
-    <button class="menuItem" onclick="goTo('history')">
-      <span class="menuIcon">🕘</span>
-      <span>تاریخچه</span>
-    </button>
-
-    <button class="menuItem" onclick="goTo('about')">
-      <span class="menuIcon">ℹ️</span>
-      <span>درباره</span>
-    </button>
+    <div class="menuSection">
+      <div class="menuSectionLabel">بیشتر</div>
+      <button class="menuItem" onclick="goTo('about')">
+        <span class="menuIconWrap"><span class="menuIcon">ℹ️</span></span>
+        <span class="menuLabel">درباره</span>
+        <span class="menuArrow">←</span>
+      </button>
+    </div>
 
     <div class="menuFooter">
-      ساخته‌شده با ❤️ توسط MusicFinder
+      <div class="menuFooterGlow"></div>
+      <span>ساخته‌شده با 💜 توسط MusicFinder</span>
     </div>
   </aside>
 
-
-  <!-- =========================
-       MAIN CONTENT
-  ========================== -->
+  <!-- MAIN -->
   <main>
 
     <!-- HERO -->
@@ -159,7 +180,6 @@
       </div>
     </section>
 
-
     <!-- RESULTS -->
     <section class="section" id="resultsSection" style="display:none;">
       <div class="sectionHeader">
@@ -174,6 +194,53 @@
       <div id="searchResults"></div>
     </section>
 
+    <!-- ❤️ FAVORITE SONGS -->
+    <section class="section" id="favorites">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">❤️</span>
+            آهنگ‌های مورد علاقه
+          </h2>
+          <p class="sectionSubtitle">آهنگ‌هایی که ذخیره کرده‌ای</p>
+        </div>
+        <button class="ghostBtn" onclick="clearFavoriteSongs()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+          </svg>
+          پاک کردن
+        </button>
+      </div>
+      <div id="favoriteSongsContent">
+        <div class="empty glass">
+          ❤️ هنوز آهنگی ذخیره نکرده‌ای. روی قلب هر آهنگ بزن تا اینجا بیاید.
+        </div>
+      </div>
+    </section>
+
+    <!-- ⭐ FAVORITE ARTISTS -->
+    <section class="section" id="favArtists">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">⭐</span>
+            هنرمندان مورد علاقه
+          </h2>
+          <p class="sectionSubtitle">هنرمندانی که ذخیره کرده‌ای</p>
+        </div>
+        <button class="ghostBtn" onclick="clearFavoriteArtists()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+          </svg>
+          پاک کردن
+        </button>
+      </div>
+      <div id="favoriteArtistsContent">
+        <div class="empty glass">
+          ⭐ هنوز هنرمندی ذخیره نکرده‌ای. روی ستاره کنار اسم هنرمند بزن.
+        </div>
+      </div>
+    </section>
 
     <!-- FOR YOU -->
     <section class="section" id="forYou">
@@ -183,12 +250,9 @@
             <span class="titleIcon">✨</span>
             پیشنهادی برای تو
           </h2>
-          <p class="sectionSubtitle">
-            بر اساس آهنگ‌هایی که کشف کرده‌ای
-          </p>
+          <p class="sectionSubtitle">بر اساس آهنگ‌هایی که کشف کرده‌ای</p>
         </div>
       </div>
-
       <div id="forYouContent">
         <div class="empty glass">
           🎵 شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.
@@ -196,18 +260,15 @@
       </div>
     </section>
 
-
     <!-- TASTE -->
     <section class="section" id="taste">
       <div class="sectionHeader">
         <div>
           <h2 class="sectionTitle">
-            <span class="titleIcon">❤️</span>
+            <span class="titleIcon">💜</span>
             سلیقه‌ی موسیقی تو
           </h2>
-          <p class="sectionSubtitle">
-            MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد
-          </p>
+          <p class="sectionSubtitle">MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد</p>
         </div>
         <button class="ghostBtn" onclick="clearTaste()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -216,7 +277,6 @@
           پاک کردن
         </button>
       </div>
-
       <div class="tasteDashboard">
         <div class="tasteBox glass">
           <div class="tasteBox-header">
@@ -227,7 +287,6 @@
             <div class="empty">هنوز آهنگی نیست.</div>
           </div>
         </div>
-
         <div class="tasteBox glass">
           <div class="tasteBox-header">
             <span class="tasteBox-icon">👤</span>
@@ -240,7 +299,6 @@
       </div>
     </section>
 
-
     <!-- HISTORY -->
     <section class="section" id="history">
       <div class="sectionHeader">
@@ -249,9 +307,7 @@
             <span class="titleIcon">🕘</span>
             تاریخچه‌ی جستجو
           </h2>
-          <p class="sectionSubtitle">
-            آخرین جستجوهای تو در MusicFinder
-          </p>
+          <p class="sectionSubtitle">آخرین جستجوهای تو در MusicFinder</p>
         </div>
         <button class="ghostBtn" onclick="clearHistory()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -260,14 +316,12 @@
           پاک کردن
         </button>
       </div>
-
       <div class="glass paddedBox">
         <div class="historyList" id="historyList">
           <div class="empty">هنوز جستجویی نیست.</div>
         </div>
       </div>
     </section>
-
 
     <!-- ABOUT -->
     <section class="section" id="about">
@@ -302,10 +356,7 @@
 
   </main>
 
-
-  <!-- =========================
-       MUSIC PLAYER
-  ========================== -->
+  <!-- MUSIC PLAYER -->
   <div class="musicPlayer" id="musicPlayer">
     <div class="playerGlow"></div>
 
@@ -319,7 +370,6 @@
       <div class="playerArtist" id="playerArtist">MusicFinder</div>
     </div>
 
-    <!-- Visualizer -->
     <div class="visualizer" aria-hidden="true">
       <span></span><span></span><span></span>
       <span></span><span></span>
@@ -331,13 +381,11 @@
           <path d="M6 5h2v14H6zM20 5v14L9 12z"/>
         </svg>
       </button>
-
       <button class="playerButton playerPlay" id="playerPlay" type="button" aria-label="پخش">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
       </button>
-
       <button class="playerButton" id="playerNext" type="button" aria-label="بعدی">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M16 5h2v14h-2zM4 5v14l11-7z"/>
@@ -347,11 +395,9 @@
 
     <div class="playerTimeline">
       <span class="playerTime" id="playerCurrentTime">0:00</span>
-
       <div class="progressWrap">
         <input class="playerProgress" id="playerProgress" type="range" min="0" max="100" value="0" />
       </div>
-
       <span class="playerTime" id="playerDuration">0:00</span>
     </div>
 
@@ -367,7 +413,6 @@
     <audio id="musicAudio"></audio>
   </div>
 
-  <!-- اسکریپت -->
   <script src="app.js"></script>
 </body>
 </html>
