@@ -1,6 +1,5 @@
 /* =========================================================
-   MusicFinder - app.js v16 (اصلاح‌شده)
-   فقط آهنگ‌های MP3 کامل + Auth + Profile + Favorites + Download
+   MusicFinder - app.js v17 (رفع مشکل پخش)
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
@@ -1167,7 +1166,7 @@ async function confirmDeleteAccount() {
 }
 
 /* =========================================================
-   MUSIC PLAYER
+   MUSIC PLAYER (با پروکسی استریم)
 ========================================================= */
 const musicPlayer = document.getElementById("musicPlayer");
 const musicAudio = document.getElementById("musicAudio");
@@ -1188,10 +1187,15 @@ let playerQueue = [];
 async function loadPlayerSong(song, autoPlay = false) {
   if (!song) return;
 
-  const url = song.audio;
+  let url = song.audio;
   if (!url) {
     showToast("لینک پخش موجود نیست", "error");
     return;
+  }
+
+  // اگر از رادیو جوانه، از پروکسی /stream استفاده کن
+  if (song.source === "radiojavan") {
+    url = `${PROXY_URL}/stream?url=${encodeURIComponent(song.audio)}`;
   }
 
   playerTitle.textContent = song.name || "آهنگ ناشناس";
@@ -1208,6 +1212,8 @@ async function loadPlayerSong(song, autoPlay = false) {
       await musicAudio.play();
       playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>`;
     } catch (e) {
+      console.error("Play error:", e);
+      showToast("خطا در پخش. دوباره امتحان کن.", "error");
       playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     }
   } else {
@@ -1247,6 +1253,11 @@ if (musicAudio) {
     playerProgress.value = 0;
     playerCurrentTime.textContent = "0:00";
     if (playerQueue.length > 1) playerNext.click();
+  });
+
+  musicAudio.addEventListener("error", (e) => {
+    console.error("Audio error:", e);
+    showToast("خطا در پخش آهنگ", "error");
   });
 }
 
@@ -1307,4 +1318,4 @@ renderFavoriteArtists();
 updateFavBadges();
 checkAuth();
 
-console.log("MusicFinder v16 ready");
+console.log("MusicFinder v17 ready · با پروکسی استریم");
