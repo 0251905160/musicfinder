@@ -1,17 +1,17 @@
 /* =========================================================
-   MusicFinder - app.js v10
-   Radio Javan + iTunes + Favorites + Download
+   MusicFinder - app.js v11
+   Radio Javan + iTunes + Favorites + Download + Auth
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
 const HISTORY_KEY     = "musicFinderSearchHistoryV9";
 const FAV_SONGS_KEY   = "musicFinderFavSongsV9";
 const FAV_ARTISTS_KEY = "musicFinderFavArtistsV9";
+const AUTH_TOKEN_KEY  = "musicFinderAuthToken";
 
 /* ⚠️ اطلاعات خودت */
-const PROXY_URL = "https://winter-cloud-3190musicfinder-proxy.ebrahiminasabtaha.workers.dev";
+const PROXY_URL = "https://musicfinder-proxy.ebrahiminasabtaha.workers.dev";
 const API_TOKEN = "cif6wf8evc6mxah:b525h5OhbFlOXYjD6Z5N";
-
 
 /* =========================
    STORAGE
@@ -30,7 +30,7 @@ function getHistory() {
 }
 function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
 
-/* ===== FAVORITES ===== */
+/* FAVORITES */
 function getFavoriteSongs() {
   try { return JSON.parse(localStorage.getItem(FAV_SONGS_KEY) || "[]"); }
   catch { return []; }
@@ -64,19 +64,14 @@ function toggleFavoriteSong(track, event) {
     list.splice(idx, 1);
   } else {
     list.unshift({
-      id: track.id,
-      name: track.name,
-      artist: track.artist,
-      album: track.album,
-      image: track.image,
-      audio: track.audio,
-      duration: track.duration,
-      source: track.source,
-      full: track.full,
+      id: track.id, name: track.name, artist: track.artist,
+      album: track.album, image: track.image, audio: track.audio,
+      duration: track.duration, source: track.source, full: track.full,
       addedAt: Date.now()
     });
   }
   saveFavoriteSongs(list);
+  saveFavoritesToServer();
   renderFavoriteSongs();
   refreshAllCards();
 }
@@ -92,13 +87,12 @@ function toggleFavoriteArtist(track, event) {
     list.splice(idx, 1);
   } else {
     list.unshift({
-      name: track.artist,
-      image: track.image,
-      source: track.source,
-      addedAt: Date.now()
+      name: track.artist, image: track.image,
+      source: track.source, addedAt: Date.now()
     });
   }
   saveFavoriteArtists(list);
+  saveFavoritesToServer();
   renderFavoriteArtists();
   refreshAllCards();
 }
@@ -106,6 +100,7 @@ function toggleFavoriteArtist(track, event) {
 function clearFavoriteSongs() {
   if (!confirm("همه‌ی آهنگ‌های مورد علاقه پاک شوند؟")) return;
   saveFavoriteSongs([]);
+  saveFavoritesToServer();
   renderFavoriteSongs();
   refreshAllCards();
 }
@@ -113,6 +108,7 @@ function clearFavoriteSongs() {
 function clearFavoriteArtists() {
   if (!confirm("همه‌ی هنرمندان مورد علاقه پاک شوند؟")) return;
   saveFavoriteArtists([]);
+  saveFavoritesToServer();
   renderFavoriteArtists();
   refreshAllCards();
 }
@@ -133,7 +129,6 @@ function updateFavBadges() {
   const m2 = document.getElementById("menuFavArtistCount");
   if (m2) m2.textContent = artistsCount;
 }
-
 
 /* =========================
    UTILS
@@ -163,7 +158,6 @@ function proxifyImage(url, source) {
   return url;
 }
 
-
 /* =========================
    MENU
 ========================= */
@@ -183,7 +177,6 @@ function goTo(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 200);
 }
-
 
 /* =========================
    HISTORY
@@ -228,7 +221,6 @@ function quickSearch(q) {
   performSearch();
 }
 
-
 /* =========================
    TASTE
 ========================= */
@@ -260,7 +252,6 @@ function clearTaste() {
   renderTaste();
   renderForYou();
 }
-
 
 /* =========================
    SEARCH
@@ -357,7 +348,6 @@ function renderResults(tracks, query, rjCount = 0, itCount = 0) {
   `;
 }
 
-
 /* =========================
    TRACK CARD
 ========================= */
@@ -433,7 +423,6 @@ function trackCard(t) {
   `;
 }
 
-
 function refreshAllCards() {
   if (window.currentTracks && window.currentTracks.length) {
     const c = document.getElementById("searchResults");
@@ -450,13 +439,12 @@ function refreshAllCards() {
   updateFavBadges();
 }
 
-
 /* =========================
    DOWNLOAD
 ========================= */
 function downloadTrack(t) {
   if (!t || !t.audio) {
-    alert("لینک دانلود برای این آهنگ موجود نیست.");
+    showToast("لینک دانلود برای این آهنگ موجود نیست", "error");
     return;
   }
 
@@ -470,15 +458,7 @@ function downloadTrack(t) {
 
   const downloadUrl = `${PROXY_URL}/download?url=${encodeURIComponent(t.audio)}&filename=${encodeURIComponent(filename)}`;
 
-  const toast = document.createElement("div");
-  toast.className = "downloadToast";
-  toast.innerHTML = `
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-      <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 19h14"/>
-    </svg>
-    در حال دانلود «${escapeHtml(t.name)}»...
-  `;
-  document.body.appendChild(toast);
+  showToast(`در حال دانلود «${t.name}»...`, "info");
 
   const a = document.createElement("a");
   a.href = downloadUrl;
@@ -487,15 +467,7 @@ function downloadTrack(t) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-
-  setTimeout(() => {
-    if (toast.parentNode) {
-      toast.classList.add("fadeOut");
-      setTimeout(() => toast.remove(), 400);
-    }
-  }, 3000);
 }
-
 
 /* =========================
    FAVORITE SONGS RENDER
@@ -574,7 +546,6 @@ function renderFavoriteSongs() {
   `;
 }
 
-
 /* =========================
    FAVORITE ARTISTS RENDER
 ========================= */
@@ -626,6 +597,7 @@ function renderFavoriteArtists() {
 function removeFavoriteArtist(name) {
   const list = getFavoriteArtists().filter(x => x.name !== name);
   saveFavoriteArtists(list);
+  saveFavoritesToServer();
   renderFavoriteArtists();
   refreshAllCards();
 }
@@ -638,7 +610,6 @@ function searchArtist(name) {
   }, 400);
 }
 
-
 /* =========================
    BACKGROUND
 ========================= */
@@ -649,7 +620,6 @@ function setBackground(image) {
   bg.style.backgroundImage = `url("${image}")`;
   bg.style.opacity = ".30";
 }
-
 
 /* =========================
    FOR YOU
@@ -691,7 +661,6 @@ function renderForYou() {
   `;
 }
 
-
 /* =========================
    TASTE RENDER
 ========================= */
@@ -720,6 +689,283 @@ function renderTaste() {
   }
 }
 
+/* =========================
+   AUTH
+========================= */
+function getAuthToken() {
+  return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+}
+function setAuthToken(t) {
+  if (t) localStorage.setItem(AUTH_TOKEN_KEY, t);
+  else localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+let currentUser = null;
+
+async function checkAuth() {
+  const token = getAuthToken();
+  if (!token) {
+    updateUserButton(null);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${PROXY_URL}/auth/me`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      currentUser = data.user;
+      updateUserButton(currentUser);
+      await loadUserFavorites();
+    } else {
+      setAuthToken("");
+      updateUserButton(null);
+    }
+  } catch (e) {
+    console.warn("Auth check failed:", e);
+    updateUserButton(null);
+  }
+}
+
+function updateUserButton(user) {
+  const btn = document.getElementById("userBtn");
+  const label = document.getElementById("userBtnLabel");
+  if (!btn || !label) return;
+
+  if (user) {
+    const firstName = (user.name || user.email.split("@")[0]).split(" ")[0];
+    label.textContent = firstName;
+    btn.classList.add("loggedIn");
+    btn.onclick = toggleUserMenu;
+  } else {
+    label.textContent = "ورود";
+    btn.classList.remove("loggedIn");
+    btn.onclick = handleUserClick;
+  }
+}
+
+function handleUserClick() {
+  if (currentUser) toggleUserMenu();
+  else openAuth("login");
+}
+
+function toggleUserMenu() {
+  let menu = document.getElementById("userMenu");
+
+  if (!menu) {
+    menu = document.createElement("div");
+    menu.className = "userMenu";
+    menu.id = "userMenu";
+    document.body.appendChild(menu);
+  }
+
+  menu.innerHTML = `
+    <div class="userMenuHeader">
+      <div class="userMenuName">${escapeHtml(currentUser.name || "کاربر")}</div>
+      <div class="userMenuEmail">${escapeHtml(currentUser.email)}</div>
+    </div>
+    <button class="userMenuItem" onclick="goTo('favorites'); closeUserMenu();">
+      ❤️ آهنگ‌های مورد علاقه
+    </button>
+    <button class="userMenuItem" onclick="goTo('favArtists'); closeUserMenu();">
+      ⭐ هنرمندان مورد علاقه
+    </button>
+    <button class="userMenuItem logout" onclick="logoutUser()">
+      🚪 خروج از حساب
+    </button>
+  `;
+
+  menu.classList.toggle("open");
+
+  if (menu.classList.contains("open")) {
+    setTimeout(() => {
+      document.addEventListener("click", closeUserMenuOutside);
+    }, 10);
+  }
+}
+
+function closeUserMenu() {
+  document.getElementById("userMenu")?.classList.remove("open");
+}
+
+function closeUserMenuOutside(e) {
+  const menu = document.getElementById("userMenu");
+  const btn = document.getElementById("userBtn");
+  if (!menu || !menu.classList.contains("open")) return;
+  if (menu.contains(e.target) || btn.contains(e.target)) return;
+  closeUserMenu();
+  document.removeEventListener("click", closeUserMenuOutside);
+}
+
+/* ===== AUTH MODAL ===== */
+let authMode = "login";
+
+function openAuth(mode = "login") {
+  authMode = mode;
+  updateAuthModalUI();
+  document.getElementById("authOverlay").classList.add("open");
+  document.getElementById("authError").textContent = "";
+  document.getElementById("authForm").reset();
+}
+
+function closeAuth() {
+  document.getElementById("authOverlay").classList.remove("open");
+}
+
+function switchAuthTab(mode) {
+  if (!mode) mode = authMode === "login" ? "signup" : "login";
+  authMode = mode;
+  updateAuthModalUI();
+  document.getElementById("authError").textContent = "";
+}
+
+function updateAuthModalUI() {
+  const isLogin = authMode === "login";
+  document.getElementById("authTitle").textContent = isLogin ? "ورود به MusicFinder" : "ساخت حساب جدید";
+  document.getElementById("authSub").textContent = isLogin ? "خوش برگشتی! وارد شو." : "به MusicFinder خوش آمدی!";
+  document.getElementById("authSubmitText").textContent = isLogin ? "ورود" : "ثبت‌نام";
+  document.getElementById("nameField").style.display = isLogin ? "none" : "flex";
+  document.getElementById("tabLogin").classList.toggle("active", isLogin);
+  document.getElementById("tabSignup").classList.toggle("active", !isLogin);
+  document.getElementById("authSwitchText").textContent = isLogin ? "حساب نداری؟" : "حساب داری؟";
+  document.getElementById("authSwitchBtn").textContent = isLogin ? "ثبت‌نام کن" : "وارد شو";
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById("authSubmitBtn");
+  const loading = document.getElementById("authLoading");
+  const text = document.getElementById("authSubmitText");
+  const errEl = document.getElementById("authError");
+
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const name = document.getElementById("authName").value.trim();
+
+  errEl.textContent = "";
+  btn.disabled = true;
+  loading.style.display = "inline-flex";
+  text.textContent = authMode === "login" ? "در حال ورود..." : "در حال ساخت حساب...";
+
+  try {
+    const endpoint = authMode === "login" ? "/auth/login" : "/auth/signup";
+    const body = authMode === "login"
+      ? { email, password }
+      : { email, password, name };
+
+    const res = await fetch(PROXY_URL + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      errEl.textContent = data.error || "خطایی رخ داد";
+      return;
+    }
+
+    setAuthToken(data.token);
+    currentUser = data.user;
+    updateUserButton(currentUser);
+
+    await loadUserFavorites();
+
+    closeAuth();
+    showToast(`خوش آمدی ${data.user.name || data.user.email}!`, "success");
+
+  } catch (err) {
+    errEl.textContent = "خطای شبکه. اتصال اینترنت را چک کن.";
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = "none";
+    text.textContent = authMode === "login" ? "ورود" : "ثبت‌نام";
+  }
+}
+
+async function logoutUser() {
+  const token = getAuthToken();
+  if (token) {
+    try {
+      await fetch(`${PROXY_URL}/auth/logout`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token }
+      });
+    } catch (e) {}
+  }
+
+  setAuthToken("");
+  currentUser = null;
+  updateUserButton(null);
+  closeUserMenu();
+
+  saveFavoriteSongs([]);
+  saveFavoriteArtists([]);
+  renderFavoriteSongs();
+  renderFavoriteArtists();
+
+  showToast("از حساب خارج شدی", "info");
+}
+
+/* ===== SYNC FAVORITES ===== */
+async function saveFavoritesToServer() {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    await fetch(`${PROXY_URL}/user/favorites`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        songs: getFavoriteSongs(),
+        artists: getFavoriteArtists()
+      })
+    });
+  } catch (e) {
+    console.warn("Failed to save favorites:", e);
+  }
+}
+
+async function loadUserFavorites() {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${PROXY_URL}/user/favorites`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (data.ok && data.favorites) {
+      saveFavoriteSongs(data.favorites.songs || []);
+      saveFavoriteArtists(data.favorites.artists || []);
+      renderFavoriteSongs();
+      renderFavoriteArtists();
+    }
+  } catch (e) {
+    console.warn("Failed to load favorites:", e);
+  }
+}
+
+/* ===== TOAST ===== */
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = "downloadToast " + type;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("fadeOut");
+    setTimeout(() => toast.remove(), 400);
+  }, 2500);
+}
 
 /* =========================
    MUSIC PLAYER
@@ -745,7 +991,7 @@ async function loadPlayerSong(song, autoPlay = false) {
 
   const url = song.audio;
   if (!url) {
-    alert("لینک پخش برای این آهنگ موجود نیست.");
+    showToast("لینک پخش برای این آهنگ موجود نیست", "error");
     return;
   }
 
@@ -844,7 +1090,6 @@ window.playMusicFinderSong = function (song, queue = []) {
   loadPlayerSong(song, true);
 };
 
-
 /* =========================
    INIT
 ========================= */
@@ -861,5 +1106,6 @@ renderForYou();
 renderFavoriteSongs();
 renderFavoriteArtists();
 updateFavBadges();
+checkAuth();
 
-console.log("MusicFinder v10 ready · با دانلود");
+console.log("MusicFinder v11 ready · با احراز هویت");
