@@ -3,100 +3,236 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MusicFinder - جستجو و پخش موسیقی</title>
+  <title>MusicFinder · کشف موسیقی بی‌پایان</title>
+  <meta name="description" content="MusicFinder - پلتفرم کشف و پخش موسیقی ایرانی و خارجی" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- پس‌زمینه داینامیک -->
+  <!-- =========================
+       BACKGROUND LAYERS
+  ========================== -->
   <div id="backgroundArt"></div>
   <div class="backgroundOverlay"></div>
+  <div class="bg-noise"></div>
 
-  <!-- نوار بالا -->
+  <!-- Floating Orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Floating Music Notes -->
+  <div class="music-notes" aria-hidden="true">
+    <span style="--i:0">♪</span>
+    <span style="--i:1">♫</span>
+    <span style="--i:2">♬</span>
+    <span style="--i:3">♪</span>
+    <span style="--i:4">♩</span>
+    <span style="--i:5">♫</span>
+    <span style="--i:6">♬</span>
+    <span style="--i:7">♪</span>
+  </div>
+
+
+  <!-- =========================
+       NAVBAR
+  ========================== -->
   <nav class="navbar">
-    <div class="logo">Music<span>Finder</span></div>
+    <div class="logo">
+      <span class="logo-icon">🎵</span>
+      <span class="logo-text">Music<em>Finder</em></span>
+    </div>
+
     <div class="navRight">
-      <button class="menuButton" onclick="openMenu()">☰</button>
+      <button class="menuButton" onclick="openMenu()" aria-label="منو">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
-  <!-- منوی کشویی -->
+
+  <!-- =========================
+       MENU DRAWER
+  ========================== -->
   <div class="menuOverlay" id="menuOverlay" onclick="closeMenu()"></div>
+
   <aside class="menuDrawer" id="menuDrawer">
     <div class="menuTop">
-      <div class="menuTitle">MusicFinder</div>
-      <button class="closeMenu" onclick="closeMenu()">×</button>
+      <div class="menuTitle">
+        <span class="logo-icon">🎵</span>
+        Music<span class="accent">Finder</span>
+      </div>
+      <button class="closeMenu" onclick="closeMenu()" aria-label="بستن">×</button>
     </div>
-    <button class="menuItem" onclick="goTo('home')">🏠 خانه</button>
-    <button class="menuItem" onclick="goTo('searchSection')">🔎 جستجو</button>
-    <button class="menuItem" onclick="goTo('forYou')">✨ پیشنهادی</button>
-    <button class="menuItem" onclick="goTo('taste')">❤️ سلیقه شما</button>
-    <button class="menuItem" onclick="goTo('history')">🕘 تاریخچه</button>
-    <button class="menuItem" onclick="goTo('about')">ℹ️ درباره</button>
+
+    <div class="menuDivider"></div>
+
+    <button class="menuItem" onclick="goTo('home')">
+      <span class="menuIcon">🏠</span>
+      <span>خانه</span>
+    </button>
+
+    <button class="menuItem" onclick="goTo('searchSection')">
+      <span class="menuIcon">🔎</span>
+      <span>جستجو</span>
+    </button>
+
+    <button class="menuItem" onclick="goTo('forYou')">
+      <span class="menuIcon">✨</span>
+      <span>پیشنهادی برای تو</span>
+    </button>
+
+    <button class="menuItem" onclick="goTo('taste')">
+      <span class="menuIcon">❤️</span>
+      <span>سلیقه‌ی تو</span>
+    </button>
+
+    <button class="menuItem" onclick="goTo('history')">
+      <span class="menuIcon">🕘</span>
+      <span>تاریخچه</span>
+    </button>
+
+    <button class="menuItem" onclick="goTo('about')">
+      <span class="menuIcon">ℹ️</span>
+      <span>درباره</span>
+    </button>
+
+    <div class="menuFooter">
+      ساخته‌شده با ❤️ توسط MusicFinder
+    </div>
   </aside>
 
-  <!-- محتوای اصلی -->
+
+  <!-- =========================
+       MAIN CONTENT
+  ========================== -->
   <main>
 
-    <!-- هیرو و جستجو -->
+    <!-- HERO -->
     <section class="hero" id="home">
-      <h1>MusicFinder</h1>
-      <p>آهنگ، هنرمند و آلبوم مورد علاقه‌ات را پیدا کن و پخش کن.</p>
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>کشف موسیقی بی‌پایان</span>
+      </div>
+
+      <h1 class="hero-title">
+        Music<span class="gradient-text">Finder</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        هر آهنگی که می‌خواهی، اینجاست.
+        جستجو کن، کشف کن، گوش بده.
+      </p>
 
       <div class="searchBox" id="searchSection">
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="نام آهنگ، هنرمند یا آلبوم را جستجو کن..."
-          autocomplete="off"
-        />
-        <button class="searchBtn" onclick="performSearch()">جستجو</button>
+        <div class="searchBox-inner">
+          <svg class="searchIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="نام آهنگ، هنرمند یا سبک را جستجو کن..."
+            autocomplete="off"
+          />
+
+          <button class="searchBtn" onclick="performSearch()">
+            <span>جستجو</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="quickTags">
+        <button class="tag" onclick="document.getElementById('searchInput').value='شادمهر'; performSearch();">شادمهر</button>
+        <button class="tag" onclick="document.getElementById('searchInput').value='محسن یگانه'; performSearch();">محسن یگانه</button>
+        <button class="tag" onclick="document.getElementById('searchInput').value='Coldplay'; performSearch();">Coldplay</button>
+        <button class="tag" onclick="document.getElementById('searchInput').value='The Weeknd'; performSearch();">The Weeknd</button>
+        <button class="tag" onclick="document.getElementById('searchInput').value='jazz'; performSearch();">Jazz</button>
       </div>
     </section>
 
-    <!-- نتایج جستجو -->
+
+    <!-- RESULTS -->
     <section class="section" id="resultsSection" style="display:none;">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">نتایج جستجو</h2>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">🎧</span>
+            نتایج جستجو
+          </h2>
           <p class="sectionSubtitle" id="searchStatus"></p>
         </div>
       </div>
       <div id="searchResults"></div>
     </section>
 
-    <!-- پیشنهادی -->
+
+    <!-- FOR YOU -->
     <section class="section" id="forYou">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">✨ پیشنهادی برای شما</h2>
-          <p class="sectionSubtitle">بر اساس آهنگ‌هایی که کاوش می‌کنی.</p>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">✨</span>
+            پیشنهادی برای تو
+          </h2>
+          <p class="sectionSubtitle">
+            بر اساس آهنگ‌هایی که کشف کرده‌ای
+          </p>
         </div>
       </div>
+
       <div id="forYouContent">
-        <div class="empty glass">شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.</div>
+        <div class="empty glass">
+          🎵 شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.
+        </div>
       </div>
     </section>
 
-    <!-- سلیقه -->
+
+    <!-- TASTE -->
     <section class="section" id="taste">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">❤️ سلیقه موسیقی شما</h2>
-          <p class="sectionSubtitle">MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد.</p>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">❤️</span>
+            سلیقه‌ی موسیقی تو
+          </h2>
+          <p class="sectionSubtitle">
+            MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد
+          </p>
         </div>
-        <button class="smallBtn" onclick="clearTaste()">پاک کردن سلیقه</button>
+        <button class="ghostBtn" onclick="clearTaste()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+          </svg>
+          پاک کردن
+        </button>
       </div>
 
       <div class="tasteDashboard">
         <div class="tasteBox glass">
-          <h3>🎵 پرکاوش‌ترین آهنگ‌ها</h3>
+          <div class="tasteBox-header">
+            <span class="tasteBox-icon">🎵</span>
+            <h3>پرکاوش‌ترین آهنگ‌ها</h3>
+          </div>
           <div class="tasteList" id="topTracks">
             <div class="empty">هنوز آهنگی نیست.</div>
           </div>
         </div>
+
         <div class="tasteBox glass">
-          <h3>👤 پرکاوش‌ترین هنرمندان</h3>
+          <div class="tasteBox-header">
+            <span class="tasteBox-icon">👤</span>
+            <h3>پرکاوش‌ترین هنرمندان</h3>
+          </div>
           <div class="tasteList" id="topArtists">
             <div class="empty">هنوز هنرمندی نیست.</div>
           </div>
@@ -104,63 +240,134 @@
       </div>
     </section>
 
-    <!-- تاریخچه -->
+
+    <!-- HISTORY -->
     <section class="section" id="history">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">🕘 تاریخچه جستجو</h2>
-          <p class="sectionSubtitle">آخرین جستجوهای شما در MusicFinder.</p>
+          <h2 class="sectionTitle">
+            <span class="titleIcon">🕘</span>
+            تاریخچه‌ی جستجو
+          </h2>
+          <p class="sectionSubtitle">
+            آخرین جستجوهای تو در MusicFinder
+          </p>
         </div>
-        <button class="smallBtn" onclick="clearHistory()">پاک کردن</button>
+        <button class="ghostBtn" onclick="clearHistory()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+          </svg>
+          پاک کردن
+        </button>
       </div>
-      <div class="glass" style="padding:20px;border-radius:25px;">
+
+      <div class="glass paddedBox">
         <div class="historyList" id="historyList">
           <div class="empty">هنوز جستجویی نیست.</div>
         </div>
       </div>
     </section>
 
-    <!-- درباره -->
+
+    <!-- ABOUT -->
     <section class="section" id="about">
-      <div class="glass" style="padding:30px;border-radius:28px;">
+      <div class="glass aboutBox">
+        <div class="aboutIcon">🎼</div>
         <h2 class="sectionTitle">درباره MusicFinder</h2>
-        <p class="modalText">MusicFinder یک پروژه شخصی کشف موسیقی است.</p>
-        <p class="modalMuted">اطلاعات موسیقی از طریق iTunes، Deezer و Audius ارائه می‌شود.</p>
+        <p class="aboutText">
+          MusicFinder یک پروژه‌ی شخصی برای کشف و پخش موسیقی است.
+          آهنگ‌های ایرانی به‌صورت کامل از رادیو جوان،
+          و آهنگ‌های خارجی با پیش‌نمایش از iTunes پخش می‌شوند.
+        </p>
+        <div class="aboutTags">
+          <span>🎵 Radio Javan</span>
+          <span>🍎 iTunes</span>
+          <span>⚡ Cloudflare</span>
+          <span>💜 Made with Love</span>
+        </div>
       </div>
     </section>
 
-    <footer>MusicFinder · کشف موسیقی شخصی</footer>
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <span class="logo-icon">🎵</span>
+          Music<span class="accent">Finder</span>
+        </div>
+        <p>کشف موسیقی، هر روز، هر لحظه.</p>
+        <div class="footer-line"></div>
+        <p class="footer-copy">© 2026 MusicFinder · ساخته شده با ❤️</p>
+      </div>
+    </footer>
+
   </main>
 
-  <!-- پلیر موسیقی (پایین صفحه) -->
+
+  <!-- =========================
+       MUSIC PLAYER
+  ========================== -->
   <div class="musicPlayer" id="musicPlayer">
-    <img class="playerCover" id="playerCover" src="" alt="کاور آلبوم" />
+    <div class="playerGlow"></div>
+
+    <div class="playerCover-wrap">
+      <img class="playerCover" id="playerCover" src="" alt="کاور" />
+      <div class="playerCover-overlay"></div>
+    </div>
+
     <div class="playerInfo">
       <div class="playerTitle" id="playerTitle">آهنگی در حال پخش نیست</div>
       <div class="playerArtist" id="playerArtist">MusicFinder</div>
     </div>
-    <div class="playerControls">
-      <button class="playerButton" id="playerPrevious" type="button">⏮</button>
-      <button class="playerButton playerPlay" id="playerPlay" type="button">▶</button>
-      <button class="playerButton" id="playerNext" type="button">⏭</button>
+
+    <!-- Visualizer -->
+    <div class="visualizer" aria-hidden="true">
+      <span></span><span></span><span></span>
+      <span></span><span></span>
     </div>
+
+    <div class="playerControls">
+      <button class="playerButton" id="playerPrevious" type="button" aria-label="قبلی">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 5h2v14H6zM20 5v14L9 12z"/>
+        </svg>
+      </button>
+
+      <button class="playerButton playerPlay" id="playerPlay" type="button" aria-label="پخش">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+
+      <button class="playerButton" id="playerNext" type="button" aria-label="بعدی">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 5h2v14h-2zM4 5v14l11-7z"/>
+        </svg>
+      </button>
+    </div>
+
     <div class="playerTimeline">
       <span class="playerTime" id="playerCurrentTime">0:00</span>
-      <input class="playerProgress" id="playerProgress" type="range" min="0" max="100" value="0" />
+
+      <div class="progressWrap">
+        <input class="playerProgress" id="playerProgress" type="range" min="0" max="100" value="0" />
+      </div>
+
       <span class="playerTime" id="playerDuration">0:00</span>
     </div>
-    <input class="playerVolume" id="playerVolume" type="range" min="0" max="1" step="0.01" value="1" />
+
+    <div class="volumeWrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+        <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+        <path d="M19 5a10 10 0 0 1 0 14"/>
+      </svg>
+      <input class="playerVolume" id="playerVolume" type="range" min="0" max="1" step="0.01" value="1" />
+    </div>
+
     <audio id="musicAudio"></audio>
   </div>
 
-  <!-- مودال -->
-  <div class="modalOverlay" id="modalOverlay" onclick="closeModal(event)">
-    <div class="modal" id="modalContent">
-      <button class="modalClose" onclick="closeModal()">×</button>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
+  <!-- اسکریپت -->
   <script src="app.js"></script>
 </body>
 </html>
