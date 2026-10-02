@@ -1,20 +1,18 @@
 /* =========================================================
-   MusicFinder - app.js (نسخه نهایی - Radio Javan)
-   پخش کامل آهنگ‌های فارسی از رادیو جوان
+   MusicFinder - app.js (نسخه نهایی ترکیبی)
+   Radio Javan (آهنگ‌های ایرانی کامل) + iTunes (پیش‌نمایش خارجی)
 ========================================================= */
 
 const TASTE_KEY   = "musicFinderTasteV8";
 const HISTORY_KEY = "musicFinderSearchHistoryV8";
 
-/* ⚠️ این دو مقدار را جایگزین کن */
+/* ⚠️ اطلاعات خودت را اینجا گذاشتم */
 const PROXY_URL = "https://winter-cloud-3190musicfinder-proxy.ebrahiminasabtaha.workers.dev";
 const API_TOKEN = "cif6wf8evc6mxah:b525h5OhbFlOXYjD6Z5N";
-
 
 /* =========================
    STORAGE
 ========================= */
-
 function getTasteData() {
   try {
     const s = localStorage.getItem(TASTE_KEY);
@@ -40,11 +38,9 @@ function saveHistory(h) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
 }
 
-
 /* =========================
    UTILS
 ========================= */
-
 function escapeHtml(v) {
   if (v === null || v === undefined) return "";
   return String(v)
@@ -62,11 +58,9 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-
 /* =========================
    MENU
 ========================= */
-
 function openMenu() {
   document.getElementById("menuOverlay").classList.add("open");
   document.getElementById("menuDrawer").classList.add("open");
@@ -84,11 +78,9 @@ function goTo(id) {
   }, 150);
 }
 
-
 /* =========================
    HISTORY
 ========================= */
-
 function rememberSearch(q) {
   const h = getHistory();
   const c = q.trim();
@@ -124,11 +116,9 @@ function clearHistory() {
   renderHistory();
 }
 
-
 /* =========================
    TASTE
 ========================= */
-
 function rememberTrack(t) {
   if (!t) return;
   const d = getTasteData();
@@ -161,11 +151,9 @@ function clearTaste() {
   renderForYou();
 }
 
-
 /* =========================
-   SEARCH (Radio Javan via MajidAPI)
+   SEARCH (Radio Javan + iTunes)
 ========================= */
-
 async function performSearch() {
   const input = document.getElementById("searchInput");
   const query = input.value.trim();
@@ -186,57 +174,76 @@ async function performSearch() {
 
   rememberSearch(query);
 
+  // === ۱) Radio Javan (آهنگ‌های ایرانی کامل) ===
+  let rjTracks = [];
   try {
     const url = `${PROXY_URL}/music/radiojavan?action=search&s=${encodeURIComponent(query)}&token=${API_TOKEN}`;
     const res = await fetch(url);
-
-    if (!res.ok) throw new Error("Network error: " + res.status);
-
     const data = await res.json();
-    console.log("API Response:", data);
 
-    let tracks = [];
-
-    if (data && data.result) {
-      // اولویت با mp3s که فقط آهنگ‌های کامل دارد
-      const mp3s = data.result.mp3s || [];
-
-      tracks = mp3s.map(item => ({
-        id: String(item.id),
+    if (data && data.result && data.result.mp3s) {
+      rjTracks = data.result.mp3s.map(item => ({
+        id: "rj_" + String(item.id),
         name: item.song || item.title || "بدون نام",
         artist: item.artist || "هنرمند ناشناس",
         album: item.album_album || "",
         image: item.photo || item.thumbnail || "",
         audio: item.link || "",
         duration: item.duration || 0,
+        source: "radiojavan",
         full: true,
         title_fa: item.song_farsi || "",
         artist_fa: item.artist_farsi || ""
       })).filter(t => t.audio);
     }
-
-    renderResults(tracks, query);
-
-  } catch (err) {
-    console.error("Search error:", err);
-    results.innerHTML = `
-      <div class="empty glass">
-        خطا در جستجو. لطفاً اتصال اینترنت را بررسی کن.
-        <br><br>
-        <small style="opacity:.6">${escapeHtml(err.message)}</small>
-      </div>
-    `;
-    status.textContent = "جستجو ناموفق بود.";
+  } catch (e) {
+    console.warn("Radio Javan failed:", e);
   }
+
+  // === ۲) iTunes (آهنگ‌های خارجی - پیش‌نمایش ۳۰ ثانیه) ===
+  let itunesTracks = [];
+  try {
+    const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=20`;
+    const res = await fetch(itunesUrl);
+    const data = await res.json();
+
+    itunesTracks = (data.results || []).map(item => ({
+      id: "it_" + String(item.trackId),
+      name: item.trackName || "",
+      artist: item.artistName || "",
+      album: item.collectionName || "",
+      image: item.artworkUrl100?.replace("100x100", "400x400") || "",
+      audio: item.previewUrl || "",
+      duration: item.trackTimeMillis ? Math.floor(item.trackTimeMillis / 1000) : 0,
+      source: "itunes",
+      full: false
+    })).filter(t => t.audio);
+  } catch (e) {
+    console.warn("iTunes failed:", e);
+  }
+
+  const allTracks = [...rjTracks, ...itunesTracks];
+
+  if (!allTracks.length) {
+    results.innerHTML = `<div class="empty glass">نتیجه‌ای برای <strong>${escapeHtml(query)}</strong> پیدا نشد.</div>`;
+    status.textContent = "نتیجه‌ای نیست.";
+    return;
+  }
+
+  renderResults(allTracks, query, rjTracks.length, itunesTracks.length);
 }
 
-
-function renderResults(tracks, query) {
+function renderResults(tracks, query, rjCount = 0, itCount = 0) {
   const c = document.getElementById("searchResults");
   const s = document.getElementById("searchStatus");
 
   window.currentTracks = tracks;
-  s.textContent = `${tracks.length} آهنگ پیدا شد`;
+
+  if (rjCount || itCount) {
+    s.textContent = `${rjCount} آهنگ ایرانی · ${itCount} پیش‌نمایش خارجی`;
+  } else {
+    s.textContent = `${tracks.length} آهنگ پیدا شد`;
+  }
 
   if (!tracks.length) {
     c.innerHTML = `<div class="empty glass">نتیجه‌ای برای <strong>${escapeHtml(query)}</strong> پیدا نشد.</div>`;
@@ -252,38 +259,37 @@ function renderResults(tracks, query) {
   `;
 }
 
-
 function trackCard(t) {
   const img = t.image || "";
   const dur = t.duration ? formatTime(t.duration) : "";
+  const isFull = t.full;
+  const badge = isFull
+    ? `<span class="badge full">کامل</span>`
+    : `<span class="badge preview">۳۰ ثانیه</span>`;
 
   return `
     <div class="resultCard glass" onclick="setBackground('${img}')">
-      ${img ? `<img class="cover" src="${img}" alt="">` : `<div class="cover"></div>`}
+      ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : `<div class="cover"></div>`}
 
-      <div style="margin-top:10px;">
-        <span class="badge full">کامل</span>
-      </div>
-
+      <div style="margin-top:10px;">${badge}</div>
       <div class="cardTitle">${escapeHtml(t.name)}</div>
       <div class="cardArtist">${escapeHtml(t.artist)}</div>
+      ${t.album ? `<div class="cardMeta">${escapeHtml(t.album)}</div>` : ""}
       ${dur ? `<div class="cardMeta">${dur}</div>` : ""}
 
       <div class="cardActions">
         <button class="smallBtn primary"
           onclick="event.stopPropagation(); playMusicFinderSong(window.currentTracks.find(x => x.id === '${t.id}'), window.currentTracks)">
-          ▶ پخش کامل
+          ▶ ${isFull ? "پخش کامل" : "پیش‌نمایش"}
         </button>
       </div>
     </div>
   `;
 }
 
-
 /* =========================
    BACKGROUND
 ========================= */
-
 function setBackground(image) {
   if (!image) return;
   const bg = document.getElementById("backgroundArt");
@@ -292,11 +298,9 @@ function setBackground(image) {
   bg.style.opacity = ".30";
 }
 
-
 /* =========================
    FOR YOU
 ========================= */
-
 function renderForYou() {
   const c = document.getElementById("forYouContent");
   if (!c) return;
@@ -315,7 +319,7 @@ function renderForYou() {
       <div class="resultGrid">
         ${tracks.slice(0, 6).map(t => `
           <div class="resultCard glass">
-            ${t.image ? `<img class="cover" src="${t.image}" alt="">` : ""}
+            ${t.image ? `<img class="cover" src="${t.image}" alt="" referrerpolicy="no-referrer" loading="lazy">` : ""}
             <div class="cardTitle">${escapeHtml(t.name)}</div>
             <div class="cardArtist">${escapeHtml(t.artist)}</div>
             <div class="cardMeta">${t.clicks} بار کاوش شده</div>
@@ -326,11 +330,9 @@ function renderForYou() {
   `;
 }
 
-
 /* =========================
    TASTE RENDER
 ========================= */
-
 function renderTaste() {
   const d = getTasteData();
   const tracks = Object.values(d.tracks).sort((a, b) => b.clicks - a.clicks).slice(0, 10);
@@ -356,11 +358,9 @@ function renderTaste() {
   }
 }
 
-
 /* =========================
    MUSIC PLAYER
 ========================= */
-
 const musicPlayer = document.getElementById("musicPlayer");
 const musicAudio = document.getElementById("musicAudio");
 const playerCover = document.getElementById("playerCover");
@@ -376,7 +376,6 @@ const playerVolume = document.getElementById("playerVolume");
 
 let currentPlayerIndex = -1;
 let playerQueue = [];
-
 
 async function loadPlayerSong(song, autoPlay = false) {
   if (!song) return;
@@ -409,7 +408,6 @@ async function loadPlayerSong(song, autoPlay = false) {
   if (song.image) setBackground(song.image);
   registerTrackClick(song);
 }
-
 
 if (playerPlay) {
   playerPlay.addEventListener("click", () => {
@@ -479,7 +477,6 @@ if (playerNext) {
   });
 }
 
-
 window.playMusicFinderSong = function (song, queue = []) {
   if (!song) return;
   playerQueue = queue.length ? queue : [song];
@@ -488,11 +485,9 @@ window.playMusicFinderSong = function (song, queue = []) {
   loadPlayerSong(song, true);
 };
 
-
 /* =========================
    INIT
 ========================= */
-
 const si = document.getElementById("searchInput");
 if (si) {
   si.addEventListener("keydown", e => {
@@ -504,4 +499,4 @@ renderHistory();
 renderTaste();
 renderForYou();
 
-console.log("MusicFinder ready · Radio Javan");
+console.log("MusicFinder ready · Radio Javan + iTunes");
