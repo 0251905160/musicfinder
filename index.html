@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MusicFinder · کشف موسیقی بی‌پایان</title>
-  <meta name="description" content="MusicFinder - پلتفرم کشف و پخش موسیقی ایرانی و خارجی" />
+  <meta name="description" content="MusicFinder - پلتفرم کشف و پخش موسیقی" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -20,17 +20,12 @@
   <div class="bg-orb bg-orb-3"></div>
 
   <div class="music-notes" aria-hidden="true">
-    <span style="--i:0">♪</span>
-    <span style="--i:1">♫</span>
-    <span style="--i:2">♬</span>
-    <span style="--i:3">♪</span>
-    <span style="--i:4">♩</span>
-    <span style="--i:5">♫</span>
-    <span style="--i:6">♬</span>
-    <span style="--i:7">♪</span>
+    <span style="--i:0">♪</span><span style="--i:1">♫</span>
+    <span style="--i:2">♬</span><span style="--i:3">♪</span>
+    <span style="--i:4">♩</span><span style="--i:5">♫</span>
+    <span style="--i:6">♬</span><span style="--i:7">♪</span>
   </div>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">
       <span class="logo-icon">🎵</span>
@@ -38,7 +33,7 @@
     </div>
 
     <div class="navRight">
-      <button class="favQuickBtn" onclick="goTo('favorites')" title="آهنگ‌های مورد علاقه">
+      <button class="favQuickBtn" onclick="goTo('favorites')" title="مورد علاقه‌ها">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/>
         </svg>
@@ -59,10 +54,8 @@
     </div>
   </nav>
 
-  <!-- MENU OVERLAY -->
   <div class="menuOverlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-  <!-- MENU DRAWER -->
   <aside class="menuDrawer" id="menuDrawer">
     <div class="menuHeader">
       <div class="menuBrand">
@@ -124,7 +117,12 @@
       </div>
 
       <div class="menuSection">
-        <div class="menuSectionLabel">بیشتر</div>
+        <div class="menuSectionLabel">حساب</div>
+        <button class="menuItem" onclick="goTo('profile')">
+          <span class="menuIconWrap"><span class="menuIcon">👤</span></span>
+          <span class="menuLabel">پروفایل کاربری</span>
+          <span class="menuArrow">←</span>
+        </button>
         <button class="menuItem" onclick="goTo('about')">
           <span class="menuIconWrap"><span class="menuIcon">ℹ️</span></span>
           <span class="menuLabel">درباره</span>
@@ -139,7 +137,6 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main>
 
     <!-- HERO -->
@@ -148,15 +145,8 @@
         <span class="pulse-dot"></span>
         <span>کشف موسیقی بی‌پایان</span>
       </div>
-
-      <h1 class="hero-title">
-        Music<span class="gradient-text">Finder</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        هر آهنگی که می‌خواهی، اینجاست.
-        جستجو کن، کشف کن، گوش بده.
-      </p>
+      <h1 class="hero-title">Music<span class="gradient-text">Finder</span></h1>
+      <p class="hero-subtitle">هر آهنگی که می‌خواهی، اینجاست. جستجو کن، کشف کن، گوش بده.</p>
 
       <div class="searchBox" id="searchSection">
         <div class="searchBox-inner">
@@ -164,14 +154,7 @@
             <circle cx="11" cy="11" r="7"/>
             <path d="m21 21-4.3-4.3"/>
           </svg>
-
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="نام آهنگ، هنرمند یا سبک را جستجو کن..."
-            autocomplete="off"
-          />
-
+          <input id="searchInput" type="text" placeholder="نام آهنگ، هنرمند یا سبک..." autocomplete="off" />
           <button class="searchBtn" onclick="performSearch()">
             <span>جستجو</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -194,37 +177,111 @@
     <section class="section" id="resultsSection" style="display:none;">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">🎧</span>
-            نتایج جستجو
-          </h2>
+          <h2 class="sectionTitle"><span class="titleIcon">🎧</span> نتایج جستجو</h2>
           <p class="sectionSubtitle" id="searchStatus"></p>
         </div>
       </div>
       <div id="searchResults"></div>
     </section>
 
-    <!-- FAVORITE SONGS -->
+    <!-- PROFILE -->
+    <section class="section" id="profile">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle"><span class="titleIcon">👤</span> پروفایل کاربری</h2>
+          <p class="sectionSubtitle">اطلاعات حساب خودت را مدیریت کن</p>
+        </div>
+      </div>
+
+      <div class="profileGrid">
+        <div class="profileCard glass">
+          <div class="profileAvatar" id="profileAvatar">?</div>
+          <h3 class="profileName" id="profileName">کاربر</h3>
+          <p class="profileEmail" id="profileEmail">-</p>
+
+          <div class="profileMetaRow">
+            <span class="profileMetaLabel">آهنگ‌های موردعلاقه</span>
+            <span class="profileMetaValue" id="profileFavCount">0</span>
+          </div>
+          <div class="profileMetaRow">
+            <span class="profileMetaLabel">هنرمندان موردعلاقه</span>
+            <span class="profileMetaValue" id="profileArtistCount">0</span>
+          </div>
+        </div>
+
+        <div class="profileCard glass">
+          <div class="profileCardHeader">
+            <span class="profileCardIcon">✏️</span>
+            <h3>ویرایش نام</h3>
+          </div>
+          <div class="profileForm">
+            <div class="authField">
+              <label>نام نمایشی</label>
+              <input type="text" id="editNameInput" placeholder="نام جدید" />
+            </div>
+            <div class="authError" id="editNameError"></div>
+            <button type="button" class="authSubmit" id="editNameBtn" onclick="updateProfileName()">
+              <span id="editNameBtnText">ذخیره نام</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="profileCard glass">
+          <div class="profileCardHeader">
+            <span class="profileCardIcon">🔒</span>
+            <h3>تغییر رمز عبور</h3>
+          </div>
+          <div class="profileForm">
+            <div class="authField">
+              <label>رمز فعلی</label>
+              <input type="password" id="currentPwdInput" placeholder="رمز فعلی" />
+            </div>
+            <div class="authField">
+              <label>رمز جدید</label>
+              <input type="password" id="newPwdInput" placeholder="حداقل ۶ کاراکتر" />
+            </div>
+            <div class="authError" id="changePwdError"></div>
+            <button type="button" class="authSubmit" id="changePwdBtn" onclick="changePassword()">
+              <span id="changePwdBtnText">تغییر رمز</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="profileCard glass danger">
+          <div class="profileCardHeader">
+            <span class="profileCardIcon">⚠️</span>
+            <h3>حذف حساب کاربری</h3>
+          </div>
+          <p class="dangerText">
+            با حذف حساب، تمام اطلاعات تو (شامل موردعلاقه‌ها، سلیقه و تاریخچه) <strong>برای همیشه</strong> پاک می‌شود.
+          </p>
+          <button type="button" class="dangerBtn" onclick="openDeleteModal()">
+            🗑️ حذف کامل حساب
+          </button>
+        </div>
+      </div>
+
+      <div class="profileGuest glass" id="profileGuest">
+        <div class="profileGuestIcon">🔐</div>
+        <h3>برای دیدن پروفایل وارد شو</h3>
+        <p>با ثبت‌نام یا ورود، به بخش پروفایل و موردعلاقه‌ها دسترسی پیدا می‌کنی.</p>
+        <button type="button" class="authSubmit profileGuestBtn" onclick="openAuth('login')">
+          ورود / ثبت‌نام
+        </button>
+      </div>
+    </section>
+
+    <!-- FAVORITES -->
     <section class="section" id="favorites">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">❤️</span>
-            آهنگ‌های مورد علاقه
-          </h2>
+          <h2 class="sectionTitle"><span class="titleIcon">❤️</span> آهنگ‌های مورد علاقه</h2>
           <p class="sectionSubtitle">آهنگ‌هایی که ذخیره کرده‌ای</p>
         </div>
-        <button class="ghostBtn" onclick="clearFavoriteSongs()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-          </svg>
-          پاک کردن
-        </button>
+        <button class="ghostBtn" onclick="clearFavoriteSongs()">پاک کردن</button>
       </div>
       <div id="favoriteSongsContent">
-        <div class="empty glass">
-          ❤️ هنوز آهنگی ذخیره نکرده‌ای. روی قلب هر آهنگ بزن تا اینجا بیاید.
-        </div>
+        <div class="empty glass">❤️ هنوز آهنگی ذخیره نکرده‌ای.</div>
       </div>
     </section>
 
@@ -232,23 +289,13 @@
     <section class="section" id="favArtists">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">⭐</span>
-            هنرمندان مورد علاقه
-          </h2>
+          <h2 class="sectionTitle"><span class="titleIcon">⭐</span> هنرمندان مورد علاقه</h2>
           <p class="sectionSubtitle">هنرمندانی که ذخیره کرده‌ای</p>
         </div>
-        <button class="ghostBtn" onclick="clearFavoriteArtists()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-          </svg>
-          پاک کردن
-        </button>
+        <button class="ghostBtn" onclick="clearFavoriteArtists()">پاک کردن</button>
       </div>
       <div id="favoriteArtistsContent">
-        <div class="empty glass">
-          ⭐ هنوز هنرمندی ذخیره نکرده‌ای. روی ستاره کنار اسم هنرمند بزن.
-        </div>
+        <div class="empty glass">⭐ هنوز هنرمندی ذخیره نکرده‌ای.</div>
       </div>
     </section>
 
@@ -256,17 +303,12 @@
     <section class="section" id="forYou">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">✨</span>
-            پیشنهادی برای تو
-          </h2>
+          <h2 class="sectionTitle"><span class="titleIcon">✨</span> پیشنهادی برای تو</h2>
           <p class="sectionSubtitle">بر اساس آهنگ‌هایی که کشف کرده‌ای</p>
         </div>
       </div>
       <div id="forYouContent">
-        <div class="empty glass">
-          🎵 شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.
-        </div>
+        <div class="empty glass">🎵 شروع به جستجوی موسیقی کن.</div>
       </div>
     </section>
 
@@ -274,18 +316,10 @@
     <section class="section" id="taste">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">💜</span>
-            سلیقه‌ی موسیقی تو
-          </h2>
-          <p class="sectionSubtitle">MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد</p>
+          <h2 class="sectionTitle"><span class="titleIcon">💜</span> سلیقه‌ی موسیقی تو</h2>
+          <p class="sectionSubtitle">MusicFinder چیزهایی که با آن‌ها تعامل داری را ذخیره می‌کند</p>
         </div>
-        <button class="ghostBtn" onclick="clearTaste()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-          </svg>
-          پاک کردن
-        </button>
+        <button class="ghostBtn" onclick="clearTaste()">پاک کردن</button>
       </div>
       <div class="tasteDashboard">
         <div class="tasteBox glass">
@@ -313,18 +347,10 @@
     <section class="section" id="history">
       <div class="sectionHeader">
         <div>
-          <h2 class="sectionTitle">
-            <span class="titleIcon">🕘</span>
-            تاریخچه‌ی جستجو
-          </h2>
-          <p class="sectionSubtitle">آخرین جستجوهای تو در MusicFinder</p>
+          <h2 class="sectionTitle"><span class="titleIcon">🕘</span> تاریخچه‌ی جستجو</h2>
+          <p class="sectionSubtitle">آخرین جستجوهای تو</p>
         </div>
-        <button class="ghostBtn" onclick="clearHistory()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-          </svg>
-          پاک کردن
-        </button>
+        <button class="ghostBtn" onclick="clearHistory()">پاک کردن</button>
       </div>
       <div class="glass paddedBox">
         <div class="historyList" id="historyList">
@@ -340,8 +366,7 @@
         <h2 class="sectionTitle">درباره MusicFinder</h2>
         <p class="aboutText">
           MusicFinder یک پروژه‌ی شخصی برای کشف و پخش موسیقی است.
-          آهنگ‌های ایرانی به‌صورت کامل از رادیو جوان،
-          و آهنگ‌های خارجی با پیش‌نمایش از iTunes پخش می‌شوند.
+          آهنگ‌های ایرانی به‌صورت کامل از رادیو جوان، و آهنگ‌های خارجی با پیش‌نمایش از iTunes پخش می‌شوند.
         </p>
         <div class="aboutTags">
           <span>🎵 Radio Javan</span>
@@ -371,7 +396,6 @@
     <div class="authModal glass">
       <button class="authClose" onclick="closeAuth()">×</button>
 
-      <!-- STEP 1 -->
       <div id="authStep1">
         <div class="authHeader">
           <div class="authLogo">🎵</div>
@@ -416,7 +440,6 @@
         </div>
       </div>
 
-      <!-- STEP 2 -->
       <div id="authStep2" style="display:none;">
         <div class="authHeader">
           <div class="authLogo">📧</div>
@@ -429,16 +452,7 @@
         <div class="authForm">
           <div class="authField">
             <label>کد ۶ رقمی</label>
-            <input
-              type="text"
-              id="verifyCode"
-              class="codeInput"
-              placeholder="123456"
-              maxlength="6"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              autocomplete="one-time-code"
-            >
+            <input type="text" id="verifyCode" class="codeInput" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
           </div>
 
           <div class="authError" id="verifyError"></div>
@@ -451,16 +465,36 @@
           </button>
 
           <div class="verifyActions">
-            <button type="button" class="resendBtn" id="resendBtn" onclick="resendCode()">
-              ارسال مجدد کد
-            </button>
-            <button type="button" class="backBtn" onclick="backToSignup()">
-              ← بازگشت
-            </button>
+            <button type="button" class="resendBtn" id="resendBtn" onclick="resendCode()">ارسال مجدد کد</button>
+            <button type="button" class="backBtn" onclick="backToSignup()">← بازگشت</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
+  <!-- DELETE MODAL -->
+  <div class="deleteModalOverlay" id="deleteModalOverlay">
+    <div class="deleteModal glass">
+      <div class="deleteModalIcon">⚠️</div>
+      <h3>حذف کامل حساب کاربری</h3>
+      <p class="deleteModalText">
+        آیا مطمئنی؟ تمام اطلاعات تو برای همیشه پاک خواهد شد.
+      </p>
+
+      <div class="authField">
+        <label>برای تأیید، رمز عبورت را وارد کن</label>
+        <input type="password" id="deleteConfirmPwd" placeholder="رمز عبور فعلی" />
+      </div>
+
+      <div class="authError" id="deleteError"></div>
+
+      <div class="deleteModalActions">
+        <button type="button" class="backBtn" onclick="closeDeleteModal()">انصراف</button>
+        <button type="button" class="dangerBtn" id="deleteConfirmBtn" onclick="confirmDeleteAccount()">
+          <span id="deleteConfirmText">حذف کن</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -479,8 +513,7 @@
     </div>
 
     <div class="visualizer" aria-hidden="true">
-      <span></span><span></span><span></span>
-      <span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
     </div>
 
     <div class="playerControls">
@@ -489,13 +522,11 @@
           <path d="M6 5h2v14H6zM20 5v14L9 12z"/>
         </svg>
       </button>
-
       <button class="playerButton playerPlay" id="playerPlay" type="button" aria-label="پخش">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
       </button>
-
       <button class="playerButton" id="playerNext" type="button" aria-label="بعدی">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M16 5h2v14h-2zM4 5v14l11-7z"/>
