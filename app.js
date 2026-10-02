@@ -1,6 +1,6 @@
 /* =========================================================
-   MusicFinder - app.js v13 (کامل)
-   Auth + Email Verify + Profile + Favorites + Download
+   MusicFinder - app.js v14 (کامل - بدون تأیید ایمیل)
+   Auth + Profile + Favorites + Download
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
@@ -13,7 +13,6 @@ const PROXY_URL = "https://musicfinder-proxy.ebrahiminasabtaha.workers.dev";
 const API_TOKEN = "cif6wf8evc6mxah:b525h5OhbFlOXYjD6Z5N";
 
 let currentUser = null;
-let pendingSignupEmail = "";
 let authMode = "login";
 
 /* =========================
@@ -775,10 +774,7 @@ function closeUserMenuOutside(e) {
 
 function openAuth(mode = "login") {
   authMode = mode;
-  document.getElementById("authStep1").style.display = "block";
-  document.getElementById("authStep2").style.display = "none";
   document.getElementById("authError").textContent = "";
-  document.getElementById("verifyError").textContent = "";
   document.getElementById("authForm").reset();
   updateAuthModalUI();
   document.getElementById("authOverlay").classList.add("open");
@@ -820,100 +816,20 @@ async function submitAuth(e) {
   const name = document.getElementById("authName").value.trim();
 
   errEl.textContent = "";
-
-  if (authMode === "login") {
-    btn.disabled = true;
-    loading.style.display = "inline-flex";
-    text.textContent = "در حال ورود...";
-
-    try {
-      const res = await fetch(PROXY_URL + "/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-
-      if (!data.ok) {
-        errEl.textContent = data.error || "خطایی رخ داد";
-        return;
-      }
-
-      setAuthToken(data.token);
-      currentUser = data.user;
-      showLoadingScreen("خوش آمدی " + (data.user.name || data.user.email) + "!");
-      setTimeout(() => location.reload(), 700);
-
-    } catch (err) {
-      errEl.textContent = "خطای شبکه";
-    } finally {
-      btn.disabled = false;
-      loading.style.display = "none";
-      text.textContent = "ورود";
-    }
-    return;
-  }
-
   btn.disabled = true;
   loading.style.display = "inline-flex";
-  text.textContent = "در حال ارسال کد...";
+  text.textContent = authMode === "login" ? "در حال ورود..." : "در حال ثبت‌نام...";
 
   try {
-    const res = await fetch(PROXY_URL + "/auth/signup", {
+    const endpoint = authMode === "login" ? "/auth/login" : "/auth/signup";
+    const body = authMode === "login"
+      ? { email, password }
+      : { email, password, name };
+
+    const res = await fetch(PROXY_URL + endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name })
-    });
-    const data = await res.json();
-
-    if (!data.ok) {
-      errEl.textContent = data.error || "خطایی رخ داد";
-      return;
-    }
-
-    pendingSignupEmail = data.email;
-    document.getElementById("emailDisplay").textContent = data.email;
-    document.getElementById("verifyCode").value = "";
-    document.getElementById("verifyError").textContent = "";
-
-    document.getElementById("authStep1").style.display = "none";
-    document.getElementById("authStep2").style.display = "block";
-
-    setTimeout(() => document.getElementById("verifyCode")?.focus(), 100);
-    showToast("کد تأیید به ایمیلت فرستاده شد ✅", "success");
-
-  } catch (err) {
-    errEl.textContent = "خطای شبکه";
-  } finally {
-    btn.disabled = false;
-    loading.style.display = "none";
-    text.textContent = "ثبت‌نام";
-  }
-}
-
-async function submitVerifyCode() {
-  const code = document.getElementById("verifyCode").value.trim();
-  const errEl = document.getElementById("verifyError");
-  const btn = document.getElementById("verifySubmitBtn");
-  const loading = document.getElementById("verifyLoading");
-  const text = document.getElementById("verifySubmitText");
-
-  errEl.textContent = "";
-
-  if (!code || code.length !== 6) {
-    errEl.textContent = "کد باید ۶ رقم باشد";
-    return;
-  }
-
-  btn.disabled = true;
-  loading.style.display = "inline-flex";
-  text.textContent = "در حال تأیید...";
-
-  try {
-    const res = await fetch(PROXY_URL + "/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingSignupEmail, code: code })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
 
@@ -924,68 +840,19 @@ async function submitVerifyCode() {
 
     setAuthToken(data.token);
     currentUser = data.user;
-    showLoadingScreen("حسابت ساخته شد! خوش آمدی 🎉");
-    setTimeout(() => location.reload(), 900);
+    showLoadingScreen(authMode === "login"
+      ? "خوش آمدی " + (data.user.name || data.user.email) + "!"
+      : "حسابت ساخته شد! خوش آمدی 🎉");
+    setTimeout(() => location.reload(), 800);
 
   } catch (err) {
     errEl.textContent = "خطای شبکه";
+    console.error(err);
   } finally {
     btn.disabled = false;
     loading.style.display = "none";
-    text.textContent = "تأیید و ساخت حساب";
+    text.textContent = authMode === "login" ? "ورود" : "ثبت‌نام";
   }
-}
-
-async function resendCode() {
-  const btn = document.getElementById("resendBtn");
-  const errEl = document.getElementById("verifyError");
-
-  btn.disabled = true;
-  const originalText = btn.textContent;
-  btn.textContent = "در حال ارسال...";
-  errEl.textContent = "";
-
-  try {
-    const res = await fetch(PROXY_URL + "/auth/resend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingSignupEmail })
-    });
-    const data = await res.json();
-
-    if (!data.ok) {
-      errEl.textContent = data.error || "خطا در ارسال";
-      btn.textContent = originalText;
-      btn.disabled = false;
-      return;
-    }
-
-    showToast("کد جدید فرستاده شد ✅", "success");
-
-    let cooldown = 60;
-    btn.textContent = `ارسال مجدد (${cooldown}s)`;
-
-    const interval = setInterval(() => {
-      cooldown--;
-      btn.textContent = `ارسال مجدد (${cooldown}s)`;
-      if (cooldown <= 0) {
-        clearInterval(interval);
-        btn.textContent = originalText;
-        btn.disabled = false;
-      }
-    }, 1000);
-
-  } catch (err) {
-    errEl.textContent = "خطای شبکه";
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
-}
-
-function backToSignup() {
-  document.getElementById("authStep2").style.display = "none";
-  document.getElementById("authStep1").style.display = "block";
-  document.getElementById("verifyError").textContent = "";
 }
 
 function showLoadingScreen(msg) {
@@ -1432,4 +1299,4 @@ renderFavoriteArtists();
 updateFavBadges();
 checkAuth();
 
-console.log("MusicFinder v13 ready · با پروفایل کاربری");
+console.log("MusicFinder v14 ready · بدون تأیید ایمیل");
