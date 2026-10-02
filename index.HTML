@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MusicFinder - جستجو و پخش موسیقی</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- پس‌زمینه داینامیک -->
+  <div id="backgroundArt"></div>
+  <div class="backgroundOverlay"></div>
+
+  <!-- نوار بالا -->
+  <nav class="navbar">
+    <div class="logo">Music<span>Finder</span></div>
+    <div class="navRight">
+      <button class="menuButton" onclick="openMenu()">☰</button>
+    </div>
+  </nav>
+
+  <!-- منوی کشویی -->
+  <div class="menuOverlay" id="menuOverlay" onclick="closeMenu()"></div>
+  <aside class="menuDrawer" id="menuDrawer">
+    <div class="menuTop">
+      <div class="menuTitle">MusicFinder</div>
+      <button class="closeMenu" onclick="closeMenu()">×</button>
+    </div>
+    <button class="menuItem" onclick="goTo('home')">🏠 خانه</button>
+    <button class="menuItem" onclick="goTo('searchSection')">🔎 جستجو</button>
+    <button class="menuItem" onclick="goTo('forYou')">✨ پیشنهادی</button>
+    <button class="menuItem" onclick="goTo('taste')">❤️ سلیقه شما</button>
+    <button class="menuItem" onclick="goTo('history')">🕘 تاریخچه</button>
+    <button class="menuItem" onclick="goTo('about')">ℹ️ درباره</button>
+  </aside>
+
+  <!-- محتوای اصلی -->
+  <main>
+
+    <!-- هیرو و جستجو -->
+    <section class="hero" id="home">
+      <h1>MusicFinder</h1>
+      <p>آهنگ، هنرمند و آلبوم مورد علاقه‌ات را پیدا کن و پخش کن.</p>
+
+      <div class="searchBox" id="searchSection">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="نام آهنگ، هنرمند یا آلبوم را جستجو کن..."
+          autocomplete="off"
+        />
+        <button class="searchBtn" onclick="performSearch()">جستجو</button>
+      </div>
+    </section>
+
+    <!-- نتایج جستجو -->
+    <section class="section" id="resultsSection" style="display:none;">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">نتایج جستجو</h2>
+          <p class="sectionSubtitle" id="searchStatus"></p>
+        </div>
+      </div>
+      <div id="searchResults"></div>
+    </section>
+
+    <!-- پیشنهادی -->
+    <section class="section" id="forYou">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">✨ پیشنهادی برای شما</h2>
+          <p class="sectionSubtitle">بر اساس آهنگ‌هایی که کاوش می‌کنی.</p>
+        </div>
+      </div>
+      <div id="forYouContent">
+        <div class="empty glass">شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.</div>
+      </div>
+    </section>
+
+    <!-- سلیقه -->
+    <section class="section" id="taste">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">❤️ سلیقه موسیقی شما</h2>
+          <p class="sectionSubtitle">MusicFinder چیزهایی که با آن‌ها تعامل داری را به خاطر می‌سپارد.</p>
+        </div>
+        <button class="smallBtn" onclick="clearTaste()">پاک کردن سلیقه</button>
+      </div>
+
+      <div class="tasteDashboard">
+        <div class="tasteBox glass">
+          <h3>🎵 پرکاوش‌ترین آهنگ‌ها</h3>
+          <div class="tasteList" id="topTracks">
+            <div class="empty">هنوز آهنگی نیست.</div>
+          </div>
+        </div>
+        <div class="tasteBox glass">
+          <h3>👤 پرکاوش‌ترین هنرمندان</h3>
+          <div class="tasteList" id="topArtists">
+            <div class="empty">هنوز هنرمندی نیست.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- تاریخچه -->
+    <section class="section" id="history">
+      <div class="sectionHeader">
+        <div>
+          <h2 class="sectionTitle">🕘 تاریخچه جستجو</h2>
+          <p class="sectionSubtitle">آخرین جستجوهای شما در MusicFinder.</p>
+        </div>
+        <button class="smallBtn" onclick="clearHistory()">پاک کردن</button>
+      </div>
+      <div class="glass" style="padding:20px;border-radius:25px;">
+        <div class="historyList" id="historyList">
+          <div class="empty">هنوز جستجویی نیست.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- درباره -->
+    <section class="section" id="about">
+      <div class="glass" style="padding:30px;border-radius:28px;">
+        <h2 class="sectionTitle">درباره MusicFinder</h2>
+        <p class="modalText">MusicFinder یک پروژه شخصی کشف موسیقی است.</p>
+        <p class="modalMuted">اطلاعات موسیقی از طریق iTunes، Deezer و Audius ارائه می‌شود.</p>
+      </div>
+    </section>
+
+    <footer>MusicFinder · کشف موسیقی شخصی</footer>
+  </main>
+
+  <!-- پلیر موسیقی (پایین صفحه) -->
+  <div class="musicPlayer" id="musicPlayer">
+    <img class="playerCover" id="playerCover" src="" alt="کاور آلبوم" />
+    <div class="playerInfo">
+      <div class="playerTitle" id="playerTitle">آهنگی در حال پخش نیست</div>
+      <div class="playerArtist" id="playerArtist">MusicFinder</div>
+    </div>
+    <div class="playerControls">
+      <button class="playerButton" id="playerPrevious" type="button">⏮</button>
+      <button class="playerButton playerPlay" id="playerPlay" type="button">▶</button>
+      <button class="playerButton" id="playerNext" type="button">⏭</button>
+    </div>
+    <div class="playerTimeline">
+      <span class="playerTime" id="playerCurrentTime">0:00</span>
+      <input class="playerProgress" id="playerProgress" type="range" min="0" max="100" value="0" />
+      <span class="playerTime" id="playerDuration">0:00</span>
+    </div>
+    <input class="playerVolume" id="playerVolume" type="range" min="0" max="1" step="0.01" value="1" />
+    <audio id="musicAudio"></audio>
+  </div>
+
+  <!-- مودال -->
+  <div class="modalOverlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modalContent">
+      <button class="modalClose" onclick="closeModal()">×</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
