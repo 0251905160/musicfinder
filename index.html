@@ -38,7 +38,7 @@
     </div>
 
     <div class="navRight">
-      <button class="favQuickBtn" onclick="goTo('favorites')" title="مورد علاقه‌ها">
+      <button class="favQuickBtn" onclick="goTo('favorites')" title="آهنگ‌های مورد علاقه">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/>
         </svg>
@@ -54,7 +54,7 @@
   <!-- MENU OVERLAY -->
   <div class="menuOverlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-  <!-- MENU DRAWER (بازطراحی شده) -->
+  <!-- MENU DRAWER -->
   <aside class="menuDrawer" id="menuDrawer">
     <div class="menuHeader">
       <div class="menuBrand">
@@ -71,56 +71,58 @@
       </button>
     </div>
 
-    <div class="menuSection">
-      <div class="menuSectionLabel">کاوش</div>
-      <button class="menuItem" onclick="goTo('home')">
-        <span class="menuIconWrap"><span class="menuIcon">🏠</span></span>
-        <span class="menuLabel">خانه</span>
-        <span class="menuArrow">←</span>
-      </button>
-      <button class="menuItem" onclick="goTo('searchSection')">
-        <span class="menuIconWrap"><span class="menuIcon">🔎</span></span>
-        <span class="menuLabel">جستجو</span>
-        <span class="menuArrow">←</span>
-      </button>
-      <button class="menuItem" onclick="goTo('forYou')">
-        <span class="menuIconWrap"><span class="menuIcon">✨</span></span>
-        <span class="menuLabel">پیشنهادی برای تو</span>
-        <span class="menuArrow">←</span>
-      </button>
-    </div>
+    <div class="menuScroll">
+      <div class="menuSection">
+        <div class="menuSectionLabel">کاوش</div>
+        <button class="menuItem" onclick="goTo('home')">
+          <span class="menuIconWrap"><span class="menuIcon">🏠</span></span>
+          <span class="menuLabel">خانه</span>
+          <span class="menuArrow">←</span>
+        </button>
+        <button class="menuItem" onclick="goTo('searchSection')">
+          <span class="menuIconWrap"><span class="menuIcon">🔎</span></span>
+          <span class="menuLabel">جستجو</span>
+          <span class="menuArrow">←</span>
+        </button>
+        <button class="menuItem" onclick="goTo('forYou')">
+          <span class="menuIconWrap"><span class="menuIcon">✨</span></span>
+          <span class="menuLabel">پیشنهادی برای تو</span>
+          <span class="menuArrow">←</span>
+        </button>
+      </div>
 
-    <div class="menuSection">
-      <div class="menuSectionLabel">کتابخانه‌ی تو</div>
-      <button class="menuItem highlight" onclick="goTo('favorites')">
-        <span class="menuIconWrap pink"><span class="menuIcon">❤️</span></span>
-        <span class="menuLabel">آهنگ‌های مورد علاقه</span>
-        <span class="menuBadge" id="menuFavCount">0</span>
-      </button>
-      <button class="menuItem highlight" onclick="goTo('favArtists')">
-        <span class="menuIconWrap gold"><span class="menuIcon">⭐</span></span>
-        <span class="menuLabel">هنرمندان مورد علاقه</span>
-        <span class="menuBadge" id="menuFavArtistCount">0</span>
-      </button>
-      <button class="menuItem" onclick="goTo('taste')">
-        <span class="menuIconWrap"><span class="menuIcon">💜</span></span>
-        <span class="menuLabel">سلیقه‌ی تو</span>
-        <span class="menuArrow">←</span>
-      </button>
-      <button class="menuItem" onclick="goTo('history')">
-        <span class="menuIconWrap"><span class="menuIcon">🕘</span></span>
-        <span class="menuLabel">تاریخچه</span>
-        <span class="menuArrow">←</span>
-      </button>
-    </div>
+      <div class="menuSection">
+        <div class="menuSectionLabel">کتابخانه‌ی تو</div>
+        <button class="menuItem highlight" onclick="goTo('favorites')">
+          <span class="menuIconWrap pink"><span class="menuIcon">❤️</span></span>
+          <span class="menuLabel">آهنگ‌های مورد علاقه</span>
+          <span class="menuBadge" id="menuFavCount">0</span>
+        </button>
+        <button class="menuItem highlight" onclick="goTo('favArtists')">
+          <span class="menuIconWrap gold"><span class="menuIcon">⭐</span></span>
+          <span class="menuLabel">هنرمندان مورد علاقه</span>
+          <span class="menuBadge" id="menuFavArtistCount">0</span>
+        </button>
+        <button class="menuItem" onclick="goTo('taste')">
+          <span class="menuIconWrap"><span class="menuIcon">💜</span></span>
+          <span class="menuLabel">سلیقه‌ی تو</span>
+          <span class="menuArrow">←</span>
+        </button>
+        <button class="menuItem" onclick="goTo('history')">
+          <span class="menuIconWrap"><span class="menuIcon">🕘</span></span>
+          <span class="menuLabel">تاریخچه</span>
+          <span class="menuArrow">←</span>
+        </button>
+      </div>
 
-    <div class="menuSection">
-      <div class="menuSectionLabel">بیشتر</div>
-      <button class="menuItem" onclick="goTo('about')">
-        <span class="menuIconWrap"><span class="menuIcon">ℹ️</span></span>
-        <span class="menuLabel">درباره</span>
-        <span class="menuArrow">←</span>
-      </button>
+      <div class="menuSection">
+        <div class="menuSectionLabel">بیشتر</div>
+        <button class="menuItem" onclick="goTo('about')">
+          <span class="menuIconWrap"><span class="menuIcon">ℹ️</span></span>
+          <span class="menuLabel">درباره</span>
+          <span class="menuArrow">←</span>
+        </button>
+      </div>
     </div>
 
     <div class="menuFooter">
@@ -172,11 +174,11 @@
       </div>
 
       <div class="quickTags">
-        <button class="tag" onclick="document.getElementById('searchInput').value='شادمهر'; performSearch();">شادمهر</button>
-        <button class="tag" onclick="document.getElementById('searchInput').value='محسن یگانه'; performSearch();">محسن یگانه</button>
-        <button class="tag" onclick="document.getElementById('searchInput').value='Coldplay'; performSearch();">Coldplay</button>
-        <button class="tag" onclick="document.getElementById('searchInput').value='The Weeknd'; performSearch();">The Weeknd</button>
-        <button class="tag" onclick="document.getElementById('searchInput').value='jazz'; performSearch();">Jazz</button>
+        <button class="tag" onclick="quickSearch('شادمهر')">شادمهر</button>
+        <button class="tag" onclick="quickSearch('محسن یگانه')">محسن یگانه</button>
+        <button class="tag" onclick="quickSearch('Coldplay')">Coldplay</button>
+        <button class="tag" onclick="quickSearch('The Weeknd')">The Weeknd</button>
+        <button class="tag" onclick="quickSearch('jazz')">Jazz</button>
       </div>
     </section>
 
@@ -381,11 +383,13 @@
           <path d="M6 5h2v14H6zM20 5v14L9 12z"/>
         </svg>
       </button>
+
       <button class="playerButton playerPlay" id="playerPlay" type="button" aria-label="پخش">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
         </svg>
       </button>
+
       <button class="playerButton" id="playerNext" type="button" aria-label="بعدی">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M16 5h2v14h-2zM4 5v14l11-7z"/>
