@@ -1,7 +1,7 @@
 /* =========================================================
    MusicFinder - app.js (نسخه نهایی)
    Radio Javan (ایرانی) + iTunes (خارجی)
-   با رفع مشکل کاور آلبوم‌ها
+   با پروکسی عکس از طریق Cloudflare Worker
 ========================================================= */
 
 const TASTE_KEY   = "musicFinderTasteV8";
@@ -61,17 +61,14 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-/* ✅ تابع جدید: پروکسی عکس برای Radio Javan */
+/* ✅ پروکسی عکس برای Radio Javan */
 function proxifyImage(url, source) {
   if (!url) return "";
 
-  // برای Radio Javan از weserv استفاده کن
   if (source === "radiojavan") {
-    const clean = url.replace(/^https?:\/\//, "");
-    return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}`;
+    return `${PROXY_URL}/img?url=${encodeURIComponent(url)}`;
   }
 
-  // بقیه منابع مستقیم لود شوند
   return url;
 }
 
@@ -350,7 +347,7 @@ function renderForYou() {
           const img = proxifyImage(t.image, t.source);
           return `
             <div class="resultCard glass">
-              ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : ""}
+              ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">` : ""}
               <div class="cardTitle">${escapeHtml(t.name)}</div>
               <div class="cardArtist">${escapeHtml(t.artist)}</div>
               <div class="cardMeta">${t.clicks} بار کاوش شده</div>
