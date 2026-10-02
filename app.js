@@ -1,6 +1,6 @@
 /* =========================================================
-   MusicFinder - app.js v9
-   Radio Javan + iTunes + Favorites System
+   MusicFinder - app.js v10
+   Radio Javan + iTunes + Favorites + Download
 ========================================================= */
 
 const TASTE_KEY       = "musicFinderTasteV9";
@@ -418,7 +418,15 @@ function trackCard(t) {
       <div class="cardActions">
         <button class="smallBtn primary"
           onclick="event.stopPropagation(); playMusicFinderSong(window.currentTracks.find(x => x.id === '${t.id}'), window.currentTracks)">
-          ▶ ${isFull ? "پخش کامل" : "پیش‌نمایش"}
+          ▶ ${isFull ? "پخش" : "پیش‌نمایش"}
+        </button>
+
+        <button class="smallBtn downloadBtn"
+          title="دانلود"
+          onclick="event.stopPropagation(); downloadTrack(JSON.parse(decodeURIComponent('${trackData}')))">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 19h14"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -440,6 +448,52 @@ function refreshAllCards() {
     }
   }
   updateFavBadges();
+}
+
+
+/* =========================
+   DOWNLOAD
+========================= */
+function downloadTrack(t) {
+  if (!t || !t.audio) {
+    alert("لینک دانلود برای این آهنگ موجود نیست.");
+    return;
+  }
+
+  const safeName = `${t.artist || "Unknown"} - ${t.name || "Unknown"}`
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const extension = t.source === "radiojavan" ? "mp3" : "m4a";
+  const filename = `${safeName}.${extension}`;
+
+  const downloadUrl = `${PROXY_URL}/download?url=${encodeURIComponent(t.audio)}&filename=${encodeURIComponent(filename)}`;
+
+  const toast = document.createElement("div");
+  toast.className = "downloadToast";
+  toast.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 19h14"/>
+    </svg>
+    در حال دانلود «${escapeHtml(t.name)}»...
+  `;
+  document.body.appendChild(toast);
+
+  const a = document.createElement("a");
+  a.href = downloadUrl;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.classList.add("fadeOut");
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, 3000);
 }
 
 
@@ -471,7 +525,6 @@ function renderFavoriteSongs() {
           : `<span class="badge preview">۳۰ ثانیه</span>`;
 
         const trackData = encodeURIComponent(JSON.stringify(t));
-        const idsArr = list.map(x => x.id);
 
         return `
           <div class="resultCard glass">
@@ -504,6 +557,14 @@ function renderFavoriteSongs() {
               <button class="smallBtn primary"
                 onclick="event.stopPropagation(); playMusicFinderSong(JSON.parse(decodeURIComponent('${trackData}')), getFavoriteSongs())">
                 ▶ پخش
+              </button>
+
+              <button class="smallBtn downloadBtn"
+                title="دانلود"
+                onclick="event.stopPropagation(); downloadTrack(JSON.parse(decodeURIComponent('${trackData}')))">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 19h14"/>
+                </svg>
               </button>
             </div>
           </div>
@@ -801,4 +862,4 @@ renderFavoriteSongs();
 renderFavoriteArtists();
 updateFavBadges();
 
-console.log("MusicFinder v9 ready · با سیستم علاقه‌مندی‌ها");
+console.log("MusicFinder v10 ready · با دانلود");
