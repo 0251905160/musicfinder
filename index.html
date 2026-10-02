@@ -45,6 +45,14 @@
         <span class="favCount" id="favCountBadge">0</span>
       </button>
 
+      <button class="userBtn" id="userBtn" onclick="handleUserClick()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+        </svg>
+        <span class="userBtnLabel" id="userBtnLabel">ورود</span>
+      </button>
+
       <button class="menuButton" onclick="openMenu()" aria-label="منو">
         <span></span><span></span><span></span>
       </button>
@@ -196,7 +204,7 @@
       <div id="searchResults"></div>
     </section>
 
-    <!-- ❤️ FAVORITE SONGS -->
+    <!-- FAVORITE SONGS -->
     <section class="section" id="favorites">
       <div class="sectionHeader">
         <div>
@@ -220,7 +228,7 @@
       </div>
     </section>
 
-    <!-- ⭐ FAVORITE ARTISTS -->
+    <!-- FAVORITE ARTISTS -->
     <section class="section" id="favArtists">
       <div class="sectionHeader">
         <div>
@@ -357,6 +365,55 @@
     </footer>
 
   </main>
+
+  <!-- AUTH MODAL -->
+  <div class="authOverlay" id="authOverlay">
+    <div class="authModal glass">
+      <button class="authClose" onclick="closeAuth()">×</button>
+
+      <div class="authHeader">
+        <div class="authLogo">🎵</div>
+        <h2 id="authTitle">ورود به MusicFinder</h2>
+        <p class="authSub" id="authSub">خوش آمدی! وارد شو یا حساب بساز.</p>
+      </div>
+
+      <div class="authTabs">
+        <button class="authTab active" id="tabLogin" onclick="switchAuthTab('login')">ورود</button>
+        <button class="authTab" id="tabSignup" onclick="switchAuthTab('signup')">ثبت‌نام</button>
+      </div>
+
+      <form class="authForm" id="authForm" onsubmit="submitAuth(event)">
+        <div class="authField" id="nameField" style="display:none;">
+          <label>نام (اختیاری)</label>
+          <input type="text" id="authName" placeholder="مثلاً: علی" autocomplete="name">
+        </div>
+
+        <div class="authField">
+          <label>ایمیل</label>
+          <input type="email" id="authEmail" placeholder="you@example.com" required autocomplete="email">
+        </div>
+
+        <div class="authField">
+          <label>رمز عبور</label>
+          <input type="password" id="authPassword" placeholder="حداقل ۶ کاراکتر" required minlength="6" autocomplete="current-password">
+        </div>
+
+        <div class="authError" id="authError"></div>
+
+        <button type="submit" class="authSubmit" id="authSubmitBtn">
+          <span id="authSubmitText">ورود</span>
+          <span class="searchLoading" id="authLoading" style="display:none;">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+      </form>
+
+      <div class="authFooter">
+        <span id="authSwitchText">حساب نداری؟</span>
+        <button type="button" class="authSwitchBtn" id="authSwitchBtn" onclick="switchAuthTab()">ثبت‌نام کن</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MUSIC PLAYER -->
   <div class="musicPlayer" id="musicPlayer">
