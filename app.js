@@ -1,11 +1,12 @@
 /* =========================================================
-   MusicFinder - app.js (نسخه نهایی)
-   Radio Javan (ایرانی) + iTunes (خارجی)
-   با پروکسی عکس از طریق Cloudflare Worker
+   MusicFinder - app.js v9
+   Radio Javan + iTunes + Favorites System
 ========================================================= */
 
-const TASTE_KEY   = "musicFinderTasteV8";
-const HISTORY_KEY = "musicFinderSearchHistoryV8";
+const TASTE_KEY       = "musicFinderTasteV9";
+const HISTORY_KEY     = "musicFinderSearchHistoryV9";
+const FAV_SONGS_KEY   = "musicFinderFavSongsV9";
+const FAV_ARTISTS_KEY = "musicFinderFavArtistsV9";
 
 /* ⚠️ اطلاعات خودت */
 const PROXY_URL = "https://winter-cloud-3190musicfinder-proxy.ebrahiminasabtaha.workers.dev";
@@ -19,25 +20,118 @@ function getTasteData() {
   try {
     const s = localStorage.getItem(TASTE_KEY);
     return s ? JSON.parse(s) : { artists: {}, tracks: {} };
-  } catch {
-    return { artists: {}, tracks: {} };
-  }
+  } catch { return { artists: {}, tracks: {} }; }
 }
-
-function saveTasteData(d) {
-  localStorage.setItem(TASTE_KEY, JSON.stringify(d));
-}
+function saveTasteData(d) { localStorage.setItem(TASTE_KEY, JSON.stringify(d)); }
 
 function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+/* ===== FAVORITES ===== */
+function getFavoriteSongs() {
+  try { return JSON.parse(localStorage.getItem(FAV_SONGS_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveFavoriteSongs(arr) {
+  localStorage.setItem(FAV_SONGS_KEY, JSON.stringify(arr));
+  updateFavBadges();
+}
+function getFavoriteArtists() {
+  try { return JSON.parse(localStorage.getItem(FAV_ARTISTS_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveFavoriteArtists(arr) {
+  localStorage.setItem(FAV_ARTISTS_KEY, JSON.stringify(arr));
+  updateFavBadges();
 }
 
-function saveHistory(h) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+function isFavoriteSong(id) {
+  return getFavoriteSongs().some(x => x.id === id);
+}
+function isFavoriteArtist(name) {
+  return getFavoriteArtists().some(x => x.name === name);
+}
+
+function toggleFavoriteSong(track, event) {
+  if (event) event.stopPropagation();
+  const list = getFavoriteSongs();
+  const idx = list.findIndex(x => x.id === track.id);
+
+  if (idx >= 0) {
+    list.splice(idx, 1);
+  } else {
+    list.unshift({
+      id: track.id,
+      name: track.name,
+      artist: track.artist,
+      album: track.album,
+      image: track.image,
+      audio: track.audio,
+      duration: track.duration,
+      source: track.source,
+      full: track.full,
+      addedAt: Date.now()
+    });
+  }
+  saveFavoriteSongs(list);
+  renderFavoriteSongs();
+  refreshAllCards();
+}
+
+function toggleFavoriteArtist(track, event) {
+  if (event) event.stopPropagation();
+  if (!track.artist) return;
+
+  const list = getFavoriteArtists();
+  const idx = list.findIndex(x => x.name === track.artist);
+
+  if (idx >= 0) {
+    list.splice(idx, 1);
+  } else {
+    list.unshift({
+      name: track.artist,
+      image: track.image,
+      source: track.source,
+      addedAt: Date.now()
+    });
+  }
+  saveFavoriteArtists(list);
+  renderFavoriteArtists();
+  refreshAllCards();
+}
+
+function clearFavoriteSongs() {
+  if (!confirm("همه‌ی آهنگ‌های مورد علاقه پاک شوند؟")) return;
+  saveFavoriteSongs([]);
+  renderFavoriteSongs();
+  refreshAllCards();
+}
+
+function clearFavoriteArtists() {
+  if (!confirm("همه‌ی هنرمندان مورد علاقه پاک شوند؟")) return;
+  saveFavoriteArtists([]);
+  renderFavoriteArtists();
+  refreshAllCards();
+}
+
+function updateFavBadges() {
+  const songsCount = getFavoriteSongs().length;
+  const artistsCount = getFavoriteArtists().length;
+
+  const badge = document.getElementById("favCountBadge");
+  if (badge) {
+    badge.textContent = songsCount;
+    badge.style.display = songsCount > 0 ? "flex" : "none";
+  }
+
+  const m1 = document.getElementById("menuFavCount");
+  if (m1) m1.textContent = songsCount;
+
+  const m2 = document.getElementById("menuFavArtistCount");
+  if (m2) m2.textContent = artistsCount;
 }
 
 
@@ -61,14 +155,11 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-/* ✅ پروکسی عکس برای Radio Javan */
 function proxifyImage(url, source) {
   if (!url) return "";
-
   if (source === "radiojavan") {
     return `${PROXY_URL}/img?url=${encodeURIComponent(url)}`;
   }
-
   return url;
 }
 
@@ -79,18 +170,18 @@ function proxifyImage(url, source) {
 function openMenu() {
   document.getElementById("menuOverlay").classList.add("open");
   document.getElementById("menuDrawer").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
-
 function closeMenu() {
   document.getElementById("menuOverlay").classList.remove("open");
   document.getElementById("menuDrawer").classList.remove("open");
+  document.body.style.overflow = "";
 }
-
 function goTo(id) {
   closeMenu();
   setTimeout(() => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  }, 150);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 200);
 }
 
 
@@ -144,13 +235,9 @@ function rememberTrack(t) {
 
   if (!d.tracks[id]) {
     d.tracks[id] = {
-      id: t.id || "",
-      name: t.name || "",
-      artist: t.artist || "",
-      image: t.image || "",
-      source: t.source || "",
-      audio: t.audio || "",
-      clicks: 0
+      id: t.id || "", name: t.name || "", artist: t.artist || "",
+      image: t.image || "", source: t.source || "",
+      audio: t.audio || "", clicks: 0
     };
   }
   d.tracks[id].clicks++;
@@ -171,7 +258,7 @@ function clearTaste() {
 
 
 /* =========================
-   SEARCH (Radio Javan + iTunes)
+   SEARCH
 ========================= */
 async function performSearch() {
   const input = document.getElementById("searchInput");
@@ -193,7 +280,6 @@ async function performSearch() {
 
   rememberSearch(query);
 
-  // === ۱) Radio Javan (آهنگ‌های ایرانی کامل) ===
   let rjTracks = [];
   try {
     const url = `${PROXY_URL}/music/radiojavan?action=search&s=${encodeURIComponent(query)}&token=${API_TOKEN}`;
@@ -210,16 +296,11 @@ async function performSearch() {
         audio: item.link || "",
         duration: item.duration || 0,
         source: "radiojavan",
-        full: true,
-        title_fa: item.song_farsi || "",
-        artist_fa: item.artist_farsi || ""
+        full: true
       })).filter(t => t.audio);
     }
-  } catch (e) {
-    console.warn("Radio Javan failed:", e);
-  }
+  } catch (e) { console.warn("RJ failed:", e); }
 
-  // === ۲) iTunes (آهنگ‌های خارجی - پیش‌نمایش ۳۰ ثانیه) ===
   let itunesTracks = [];
   try {
     const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=20`;
@@ -237,9 +318,7 @@ async function performSearch() {
       source: "itunes",
       full: false
     })).filter(t => t.audio);
-  } catch (e) {
-    console.warn("iTunes failed:", e);
-  }
+  } catch (e) { console.warn("iTunes failed:", e); }
 
   const allTracks = [...rjTracks, ...itunesTracks];
 
@@ -251,7 +330,6 @@ async function performSearch() {
 
   renderResults(allTracks, query, rjTracks.length, itunesTracks.length);
 }
-
 
 function renderResults(tracks, query, rjCount = 0, itCount = 0) {
   const c = document.getElementById("searchResults");
@@ -280,22 +358,60 @@ function renderResults(tracks, query, rjCount = 0, itCount = 0) {
 }
 
 
+/* =========================
+   TRACK CARD (با دکمه‌های Favorite)
+========================= */
 function trackCard(t) {
   const rawImg = t.image || "";
   const img = proxifyImage(rawImg, t.source);
   const dur = t.duration ? formatTime(t.duration) : "";
   const isFull = t.full;
+
   const badge = isFull
     ? `<span class="badge full">کامل</span>`
     : `<span class="badge preview">۳۰ ثانیه</span>`;
 
+  const songFav = isFavoriteSong(t.id);
+  const artistFav = isFavoriteArtist(t.artist);
+
+  const trackData = encodeURIComponent(JSON.stringify(t));
+
   return `
     <div class="resultCard glass" onclick="setBackground('${img}')">
-      ${img
-        ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">`
-        : `<div class="cover"></div>`}
 
-      <div style="margin-top:10px;">${badge}</div>
+      <div class="cardTopRow">
+        ${badge}
+
+        <div class="cardFavBtns">
+          <button class="favMiniBtn ${songFav ? 'active' : ''}"
+            title="${songFav ? 'حذف از مورد علاقه' : 'ذخیره آهنگ'}"
+            onclick="toggleFavoriteSong(JSON.parse(decodeURIComponent('${trackData}')), event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${songFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+              <path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/>
+            </svg>
+          </button>
+
+          <button class="favMiniBtn star ${artistFav ? 'active' : ''}"
+            title="${artistFav ? 'حذف هنرمند از مورد علاقه' : 'ذخیره هنرمند'}"
+            onclick="toggleFavoriteArtist(JSON.parse(decodeURIComponent('${trackData}')), event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${artistFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="coverWrap" onclick="setBackground('${img}')">
+        ${img
+          ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="cover"></div>`}
+        <div class="coverPlayOverlay">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+      </div>
+
       <div class="cardTitle">${escapeHtml(t.name)}</div>
       <div class="cardArtist">${escapeHtml(t.artist)}</div>
       ${t.album ? `<div class="cardMeta">${escapeHtml(t.album)}</div>` : ""}
@@ -309,6 +425,157 @@ function trackCard(t) {
       </div>
     </div>
   `;
+}
+
+/* رفرش کردن همه کارت‌ها برای آپدیت قلب/ستاره‌ها */
+function refreshAllCards() {
+  if (window.currentTracks && window.currentTracks.length) {
+    const c = document.getElementById("searchResults");
+    if (c && c.innerHTML.trim()) {
+      c.innerHTML = `
+        <div class="resultGroup">
+          <div class="resultGrid">
+            ${window.currentTracks.map(trackCard).join("")}
+          </div>
+        </div>
+      `;
+    }
+  }
+  updateFavBadges();
+}
+
+
+/* =========================
+   FAVORITE SONGS RENDER
+========================= */
+function renderFavoriteSongs() {
+  const c = document.getElementById("favoriteSongsContent");
+  if (!c) return;
+
+  const list = getFavoriteSongs();
+
+  if (!list.length) {
+    c.innerHTML = `
+      <div class="empty glass">
+        ❤️ هنوز آهنگی ذخیره نکرده‌ای. روی قلب هر آهنگ بزن تا اینجا بیاید.
+      </div>
+    `;
+    return;
+  }
+
+  c.innerHTML = `
+    <div class="resultGrid">
+      ${list.map(t => {
+        const img = proxifyImage(t.image, t.source);
+        const dur = t.duration ? formatTime(t.duration) : "";
+        const badge = t.full
+          ? `<span class="badge full">کامل</span>`
+          : `<span class="badge preview">۳۰ ثانیه</span>`;
+
+        const trackData = encodeURIComponent(JSON.stringify(t));
+
+        return `
+          <div class="resultCard glass">
+            <div class="cardTopRow">
+              ${badge}
+              <div class="cardFavBtns">
+                <button class="favMiniBtn active"
+                  title="حذف از مورد علاقه"
+                  onclick="toggleFavoriteSong(JSON.parse(decodeURIComponent('${trackData}')), event)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="coverWrap" onclick="setBackground('${img}')">
+              ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : `<div class="cover"></div>`}
+              <div class="coverPlayOverlay">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+
+            <div class="cardTitle">${escapeHtml(t.name)}</div>
+            <div class="cardArtist">${escapeHtml(t.artist)}</div>
+            ${t.album ? `<div class="cardMeta">${escapeHtml(t.album)}</div>` : ""}
+            ${dur ? `<div class="cardMeta">${dur}</div>` : ""}
+
+            <div class="cardActions">
+              <button class="smallBtn primary"
+                onclick="event.stopPropagation(); playMusicFinderSong(JSON.parse(decodeURIComponent('${trackData}')), ${JSON.stringify(list.map(x => x.id))}.map(id => getFavoriteSongs().find(y => y.id === id)))">
+                ▶ پخش
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+
+/* =========================
+   FAVORITE ARTISTS RENDER
+========================= */
+function renderFavoriteArtists() {
+  const c = document.getElementById("favoriteArtistsContent");
+  if (!c) return;
+
+  const list = getFavoriteArtists();
+
+  if (!list.length) {
+    c.innerHTML = `
+      <div class="empty glass">
+        ⭐ هنوز هنرمندی ذخیره نکرده‌ای. روی ستاره کنار اسم هنرمند بزن.
+      </div>
+    `;
+    return;
+  }
+
+  c.innerHTML = `
+    <div class="artistGrid">
+      ${list.map(a => {
+        const img = proxifyImage(a.image, a.source);
+        return `
+          <div class="artistCard glass" onclick="searchArtist('${escapeHtml(a.name)}')">
+            <div class="artistImageWrap">
+              ${img
+                ? `<img class="artistImage" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">`
+                : `<div class="artistImage"></div>`}
+              <div class="artistOverlay">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <div class="artistName">${escapeHtml(a.name)}</div>
+            <div class="artistSummary">کلیک کن تا آهنگ‌هایش را ببینی</div>
+            <button class="favMiniBtn star active artistRemove"
+              onclick="event.stopPropagation(); removeFavoriteArtist('${escapeHtml(a.name)}')"
+              title="حذف از مورد علاقه">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function removeFavoriteArtist(name) {
+  const list = getFavoriteArtists().filter(x => x.name !== name);
+  saveFavoriteArtists(list);
+  renderFavoriteArtists();
+  refreshAllCards();
+}
+
+function searchArtist(name) {
+  document.getElementById("searchInput").value = name;
+  performSearch();
+  setTimeout(() => {
+    document.getElementById("resultsSection")?.scrollIntoView({ behavior: "smooth" });
+  }, 300);
 }
 
 
@@ -335,7 +602,7 @@ function renderForYou() {
   const tracks = Object.values(d.tracks).sort((a, b) => b.clicks - a.clicks);
 
   if (!tracks.length) {
-    c.innerHTML = `<div class="empty glass">شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.</div>`;
+    c.innerHTML = `<div class="empty glass">🎵 شروع به جستجوی موسیقی کن تا MusicFinder سلیقه‌ات را یاد بگیرد.</div>`;
     return;
   }
 
@@ -346,8 +613,13 @@ function renderForYou() {
         ${tracks.slice(0, 6).map(t => {
           const img = proxifyImage(t.image, t.source);
           return `
-            <div class="resultCard glass">
-              ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">` : ""}
+            <div class="resultCard glass" onclick="setBackground('${img}')">
+              <div class="coverWrap">
+                ${img ? `<img class="cover" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy">` : `<div class="cover"></div>`}
+                <div class="coverPlayOverlay">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
               <div class="cardTitle">${escapeHtml(t.name)}</div>
               <div class="cardArtist">${escapeHtml(t.artist)}</div>
               <div class="cardMeta">${t.clicks} بار کاوش شده</div>
@@ -408,7 +680,6 @@ const playerVolume = document.getElementById("playerVolume");
 let currentPlayerIndex = -1;
 let playerQueue = [];
 
-
 async function loadPlayerSong(song, autoPlay = false) {
   if (!song) return;
 
@@ -421,7 +692,6 @@ async function loadPlayerSong(song, autoPlay = false) {
   playerTitle.textContent = song.name || "آهنگ ناشناس";
   playerArtist.textContent = song.artist || "هنرمند ناشناس";
 
-  // کاور پلیر هم از پروکسی رد شود
   const coverImg = proxifyImage(song.image, song.source);
   playerCover.src = coverImg || "";
 
@@ -431,29 +701,27 @@ async function loadPlayerSong(song, autoPlay = false) {
   if (autoPlay) {
     try {
       await musicAudio.play();
-      playerPlay.textContent = "❚❚";
+      playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>`;
     } catch (e) {
-      console.warn("Autoplay blocked:", e);
-      playerPlay.textContent = "▶";
+      playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     }
   } else {
-    playerPlay.textContent = "▶";
+    playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
   }
 
   if (coverImg) setBackground(coverImg);
   registerTrackClick(song);
 }
 
-
 if (playerPlay) {
   playerPlay.addEventListener("click", () => {
     if (!musicAudio.src) return;
     if (musicAudio.paused) {
       musicAudio.play();
-      playerPlay.textContent = "❚❚";
+      playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>`;
     } else {
       musicAudio.pause();
-      playerPlay.textContent = "▶";
+      playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     }
   });
 }
@@ -470,7 +738,7 @@ if (musicAudio) {
   });
 
   musicAudio.addEventListener("ended", () => {
-    playerPlay.textContent = "▶";
+    playerPlay.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     playerProgress.value = 0;
     playerCurrentTime.textContent = "0:00";
     if (playerQueue.length > 1) playerNext.click();
@@ -478,7 +746,6 @@ if (musicAudio) {
 
   musicAudio.addEventListener("error", () => {
     console.error("Audio error");
-    playerPlay.textContent = "▶";
   });
 }
 
@@ -513,7 +780,6 @@ if (playerNext) {
   });
 }
 
-
 window.playMusicFinderSong = function (song, queue = []) {
   if (!song) return;
   playerQueue = queue.length ? queue : [song];
@@ -536,5 +802,8 @@ if (si) {
 renderHistory();
 renderTaste();
 renderForYou();
+renderFavoriteSongs();
+renderFavoriteArtists();
+updateFavBadges();
 
-console.log("MusicFinder ready · Radio Javan + iTunes");
+console.log("MusicFinder v9 ready · با سیستم علاقه‌مندی‌ها");
