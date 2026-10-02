@@ -83,7 +83,7 @@ function toggleFavoriteSong(track, event) {
 
 function toggleFavoriteArtist(track, event) {
   if (event) event.stopPropagation();
-  if (!track.artist) return;
+  if (!track || !track.artist) return;
 
   const list = getFavoriteArtists();
   const idx = list.findIndex(x => x.name === track.artist);
@@ -209,7 +209,7 @@ function renderHistory() {
   }
 
   el.innerHTML = h.map(q =>
-    `<button class="historyItem" onclick="searchFromHistory(${JSON.stringify(q)})">🔎 ${escapeHtml(q)}</button>`
+    `<button class="historyItem" onclick="searchFromHistory(${JSON.stringify(q).replace(/"/g, '&quot;')})">🔎 ${escapeHtml(q)}</button>`
   ).join("");
 }
 
@@ -221,6 +221,11 @@ function searchFromHistory(q) {
 function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
+}
+
+function quickSearch(q) {
+  document.getElementById("searchInput").value = q;
+  performSearch();
 }
 
 
@@ -343,11 +348,6 @@ function renderResults(tracks, query, rjCount = 0, itCount = 0) {
     s.textContent = `${tracks.length} آهنگ پیدا شد`;
   }
 
-  if (!tracks.length) {
-    c.innerHTML = `<div class="empty glass">نتیجه‌ای برای <strong>${escapeHtml(query)}</strong> پیدا نشد.</div>`;
-    return;
-  }
-
   c.innerHTML = `
     <div class="resultGroup">
       <div class="resultGrid">
@@ -359,7 +359,7 @@ function renderResults(tracks, query, rjCount = 0, itCount = 0) {
 
 
 /* =========================
-   TRACK CARD (با دکمه‌های Favorite)
+   TRACK CARD
 ========================= */
 function trackCard(t) {
   const rawImg = t.image || "";
@@ -377,11 +377,9 @@ function trackCard(t) {
   const trackData = encodeURIComponent(JSON.stringify(t));
 
   return `
-    <div class="resultCard glass" onclick="setBackground('${img}')">
-
+    <div class="resultCard glass">
       <div class="cardTopRow">
         ${badge}
-
         <div class="cardFavBtns">
           <button class="favMiniBtn ${songFav ? 'active' : ''}"
             title="${songFav ? 'حذف از مورد علاقه' : 'ذخیره آهنگ'}"
@@ -427,7 +425,7 @@ function trackCard(t) {
   `;
 }
 
-/* رفرش کردن همه کارت‌ها برای آپدیت قلب/ستاره‌ها */
+
 function refreshAllCards() {
   if (window.currentTracks && window.currentTracks.length) {
     const c = document.getElementById("searchResults");
@@ -473,6 +471,7 @@ function renderFavoriteSongs() {
           : `<span class="badge preview">۳۰ ثانیه</span>`;
 
         const trackData = encodeURIComponent(JSON.stringify(t));
+        const idsArr = list.map(x => x.id);
 
         return `
           <div class="resultCard glass">
@@ -503,7 +502,7 @@ function renderFavoriteSongs() {
 
             <div class="cardActions">
               <button class="smallBtn primary"
-                onclick="event.stopPropagation(); playMusicFinderSong(JSON.parse(decodeURIComponent('${trackData}')), ${JSON.stringify(list.map(x => x.id))}.map(id => getFavoriteSongs().find(y => y.id === id)))">
+                onclick="event.stopPropagation(); playMusicFinderSong(JSON.parse(decodeURIComponent('${trackData}')), getFavoriteSongs())">
                 ▶ پخش
               </button>
             </div>
@@ -538,7 +537,7 @@ function renderFavoriteArtists() {
       ${list.map(a => {
         const img = proxifyImage(a.image, a.source);
         return `
-          <div class="artistCard glass" onclick="searchArtist('${escapeHtml(a.name)}')">
+          <div class="artistCard glass" onclick="searchArtist('${escapeHtml(a.name).replace(/'/g, "&#39;")}')">
             <div class="artistImageWrap">
               ${img
                 ? `<img class="artistImage" src="${img}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none'">`
@@ -550,7 +549,7 @@ function renderFavoriteArtists() {
             <div class="artistName">${escapeHtml(a.name)}</div>
             <div class="artistSummary">کلیک کن تا آهنگ‌هایش را ببینی</div>
             <button class="favMiniBtn star active artistRemove"
-              onclick="event.stopPropagation(); removeFavoriteArtist('${escapeHtml(a.name)}')"
+              onclick="event.stopPropagation(); removeFavoriteArtist('${escapeHtml(a.name).replace(/'/g, "&#39;")}')"
               title="حذف از مورد علاقه">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -575,7 +574,7 @@ function searchArtist(name) {
   performSearch();
   setTimeout(() => {
     document.getElementById("resultsSection")?.scrollIntoView({ behavior: "smooth" });
-  }, 300);
+  }, 400);
 }
 
 
@@ -742,10 +741,6 @@ if (musicAudio) {
     playerProgress.value = 0;
     playerCurrentTime.textContent = "0:00";
     if (playerQueue.length > 1) playerNext.click();
-  });
-
-  musicAudio.addEventListener("error", () => {
-    console.error("Audio error");
   });
 }
 
